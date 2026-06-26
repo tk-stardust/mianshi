@@ -2,6 +2,17 @@
 chcp 65001 >nul
 cd /d %~dp0
 
+:: 创建虚拟环境（首次）
+if not exist ".venv\Scripts\python.exe" (
+    echo ========================================
+    echo   正在创建虚拟环境...
+    echo ========================================
+    python -m venv .venv
+)
+
+:: 激活虚拟环境
+call .venv\Scripts\activate.bat
+
 if not exist "frontend\dist\index.html" (
     echo ========================================
     echo   首次运行，正在安装依赖和构建前端...
