@@ -764,7 +764,6 @@ pre.answer {
 .kn-main {
   flex: 1;
   min-width: 0;
-  overflow-y: auto;
 }
 
 .knowledge-view .toolbar button {
@@ -844,8 +843,6 @@ pre.answer {
   top: calc(100% + 4px);
   z-index: 10;
   border: 1px solid #e2e8f0;
-  max-height: 360px;
-  overflow-y: auto;
 }
 
 .concept-detail b {
