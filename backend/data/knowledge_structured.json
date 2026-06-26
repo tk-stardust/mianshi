@@ -1,0 +1,1302 @@
+{
+  "concepts": [
+    {
+      "title": "大语言模型（LLM）",
+      "category": "大模型基础",
+      "definition": "基于Transformer架构、使用海量文本数据训练的通用自然语言处理模型，能理解和生成文本。",
+      "mechanism": "通过自监督预训练学习语言规律，预测下一个token，参数量越大涌现能力越强。",
+      "useCase": "对话、翻译、摘要、写作、代码生成、情感分析等通用文本任务。",
+      "comparison": "vs 传统NLP模型（如BERT）：GPT是生成式自回归，BERT是理解式双向编码；vs 小模型：LLM有涌现能力（few-shot/零样本推理）。",
+      "limitation": "推理成本高、可能产生幻觉、知识有截止日期、无法获取实时信息。",
+      "interview": "解释LLM和传统模型的核心区别、为什么大模型有涌现能力、Transformer为什么是LLM的主流架构。",
+      "source": "01_认知阶段(大模型介绍，调用，RAG，Agent）.md"
+    },
+    {
+      "title": "Embedding（嵌入向量）",
+      "category": "大模型基础",
+      "definition": "将文本/图像等非结构化数据映射为固定维度稠密向量的技术，语义越近向量距离越近。",
+      "mechanism": "通过embedding模型（如text-embedding-3）将输入token序列转换为固定长度的浮点数向量，用余弦相似度衡量语义相关性。",
+      "useCase": "RAG知识库向量化、语义搜索、文本聚类、推荐系统、跨模态检索。",
+      "comparison": "vs 关键词匹配：Embedding理解语义相似性，关键词只看字面；vs One-Hot：Embedding低维稠密有语义，One-Hot高维稀疏无语义。",
+      "limitation": "长文本截断后语义损失、跨语言效果不稳定、嵌入模型选择影响下游任务质量。",
+      "interview": "解释Embedding的原理、为什么RAG用向量检索而不是关键词、常用的Embedding模型有哪些。",
+      "source": "01_大模型基础知识_Embeddings.md"
+    },
+    {
+      "title": "向量数据库",
+      "category": "大模型基础",
+      "definition": "专门存储和检索高维向量的数据库，通过近似最近邻(ANN)算法实现毫秒级语义搜索。",
+      "mechanism": "将文档Embedding存入数据库，查询时计算查询向量与所有文档向量的相似度，用ANN算法(HNSW/IVF)加速Top-K检索。",
+      "useCase": "RAG知识库存储、图片相似搜索、推荐系统、生物信息序列匹配。",
+      "comparison": "vs 传统数据库：向量库做语义模糊匹配，传统库做精确字段匹配；常用选型：Milvus(分布式)、Qdrant(Rust高性能)、Chroma(轻量开发)。",
+      "limitation": "大规模集群运维复杂、ANN近似检索可能漏掉相关结果、频繁更新需re-index。",
+      "interview": "向量数据库和传统数据库的区别、为什么RAG需要向量数据库、ANN算法的原理。",
+      "source": "02_大模型基础知识_向量数据库.md"
+    },
+    {
+      "title": "Token（词元）",
+      "category": "大模型基础",
+      "definition": "大模型处理文本的最小单位，可以是完整单词、汉字片段或标点符号。",
+      "mechanism": "Tokenizer将输入文本分词为token序列，每个token映射为词表中的整数ID，模型按token计费和限制上下文。不同模型的tokenizer不可互换。",
+      "useCase": "理解API计费方式、估算prompt消耗成本、选择合适上下文窗口的模型。",
+      "comparison": "英文：1 token ≈ 0.75单词；中文：1 token ≈ 1汉字。不同模型tokenizer不同，同样文本token数可能不同。",
+      "limitation": "Token限制导致长文档需截断、Tokenizer对罕见词和新词处理不理想。",
+      "interview": "Token和字/词的区别是什么、为什么不同模型token数不同、上下文窗口大小和token的关系。",
+      "source": "01_认知阶段(大模型介绍，调用，RAG，Agent）.md"
+    },
+    {
+      "title": "预训练（Pretraining）",
+      "category": "大模型基础",
+      "definition": "在海量无标注文本上以自监督方式训练基座模型的过程，是获得通用语言能力的第一阶段。",
+      "mechanism": "以预测下一个token为目标，在数万亿token数据上训练数月，使用数千张GPU，成本数百万至上亿美元。输出为'基座模型'。",
+      "useCase": "了解为什么大模型有广泛知识、为什么个人/中小企业无法从零预训练。",
+      "comparison": "vs SFT指令微调：预训练学'知识'，SFT学'听话'；vs 继续预训练：继续预训练在特定领域数据上继续做语言建模。",
+      "limitation": "成本极高只有大厂能做、数据噪声可能引入偏见和有害内容、知识有截止日期。",
+      "interview": "预训练和微调的区别、预训练为什么用自监督学习、训练数据的质量如何保障。",
+      "source": "01_认知阶段(大模型介绍，调用，RAG，Agent）.md"
+    },
+    {
+      "title": "涌现能力（Emergent Ability）",
+      "category": "大模型基础",
+      "definition": "模型参数规模突破某个临界点后，突然出现的训练数据中未曾显式训练的新能力。",
+      "mechanism": "Scaling Law解释了现象但未完全解释原因。推测是大规模参数+多样数据形成了组合泛化能力。",
+      "useCase": "理解为什么大模型能完成训练时未见过的新任务、为什么模型越大效果越好（不仅量变还有质变）。",
+      "comparison": "vs 显式训练能力：涌现能力不是通过标注数据教出来的；小模型<span100B）通常没有涌现能力。",
+      "limitation": "不可预测（不知道什么规模会出现什么能力）、不可控（可能出现有害的涌现行为）。",
+      "interview": "什么是涌现能力、举例说明、Scaling Law是什么、为什么小模型没有涌现能力。",
+      "source": "01_认知阶段(大模型介绍，调用，RAG，Agent）.md"
+    },
+    {
+      "title": "上下文窗口（Context Window）",
+      "category": "大模型基础",
+      "definition": "模型一次能同时处理的输入+输出token数量上限。",
+      "mechanism": "使用位置编码(RoPE/ALiBi)扩展有效上下文范围。超过窗口的token被截断或遗忘。",
+      "useCase": "长文档分析、代码仓库理解、多轮对话、法律合同审查。",
+      "comparison": "GPT-3.5: 4K → GPT-4: 128K → Gemini 2.5: 100万 → Llama 4: 1000万。越大越贵。",
+      "limitation": "超长上下文推理速度下降、中间信息容易被忽略（Lost in the Middle）、成本与上下文长度正相关。",
+      "interview": "上下文窗口是什么、为什么不是越大越好、如何处理超出窗口的长文档。",
+      "source": "01_认知阶段(大模型介绍，调用，RAG，Agent）.md"
+    },
+    {
+      "title": "Ollama",
+      "category": "大模型基础",
+      "definition": "在本地一键运行开源大模型的平台工具，类似'大模型界的Docker'。",
+      "mechanism": "封装llama.cpp等推理引擎，提供统一CLI和REST API(11434端口)，自动处理模型下载、量化版本选择、GPU/CPU推理切换。",
+      "useCase": "本地实验、离线使用、数据隐私保护、教学演示、RAG/Agent开发测试。",
+      "comparison": "vs vLLM：Ollama适合个人开发，vLLM适合生产高并发；vs LM Studio：Ollama是CLI工具，LM Studio有GUI。",
+      "limitation": "高并发性能不如vLLM、不支持分布式推理、长上下文性能受限。",
+      "interview": "Ollama怎么用、和vLLM的区别、如何用Ollama搭建本地RAG系统。",
+      "source": "01_认知阶段(大模型介绍，调用，RAG，Agent）.md"
+    },
+    {
+      "title": "自监督学习（Self-supervised Learning）",
+      "category": "大模型基础",
+      "definition": "利用数据自身结构生成伪标签的机器学习范式，无需人工标注，是大模型预训练的核心方法。",
+      "mechanism": "GPT用'预测下一个token'（标签就是原文的下一个词），BERT用'mask填空'（标签就是被mask的词）。",
+      "useCase": "大模型预训练、图像预训练（MAE/SimCLR）、语音预训练。",
+      "comparison": "vs 监督学习：自监督不需要人工标注；vs 无监督学习：自监督有'伪标签'，无监督没有明确的优化目标。",
+      "limitation": "伪标签质量依赖数据质量、不适合标签至关重要的任务、预训练目标可能与下游任务目标不一致。",
+      "interview": "自监督学习和监督学习的区别、GPT和BERT各自用什么自监督目标。",
+      "source": "01_认知阶段.md"
+    },
+    {
+      "title": "混合专家模型（MoE）",
+      "category": "大模型基础",
+      "definition": "将模型拆成多个专家子网络+门控路由，每次推理只激活部分专家，以较少计算量获得大参数量。",
+      "mechanism": "门控网络Top-k路由：每个token仅激活k个专家(通常k=2)。所有专家常驻显存但只有激活的参与计算。",
+      "useCase": "DeepSeek-V3(671B激活37B)、Mixtral 8x7B、GPT-4疑似使用MoE。",
+      "comparison": "vs 稠密模型：MoE参数大计算少但显存占用高；负载不均（热门专家过载，冷门专家闲置）是核心挑战。",
+      "limitation": "显存占用大（所有专家需常驻）、负载均衡困难、推理部署复杂（多卡专家分布）。",
+      "interview": "MoE的原理、为什么能'参数大计算少'、负载不均衡怎么解决。",
+      "source": "01_认知阶段.md"
+    },
+    {
+      "title": "采样策略（Temperature / Top-k / Top-p）",
+      "category": "大模型基础",
+      "definition": "控制大模型生成文本随机性和多样性的解码参数组合。",
+      "mechanism": "Temperature调节softmax平滑度（<1更确定，>1更随机）；Top-k限制候选词数量；Top-p(核采样)从累积概率达p的最小词集中采样。",
+      "useCase": "创意写作(T=0.8~1.2)、专业问答(T=0~0.3)、代码生成(T=0)、对话(T=0.5~0.8)。",
+      "comparison": "Top-k固定候选数，Top-p动态调整。通常Top-p + Temperature组合使用效果最好。",
+      "limitation": "高Temperature容易产生胡言乱语、低Temperature输出重复单调。",
+      "interview": "Temperature/Top-k/Top-p的作用和区别、如何为不同任务选择合适的采样策略。",
+      "source": "03_提示词.md"
+    },
+    {
+      "title": "大模型幻觉（Hallucination）",
+      "category": "大模型基础",
+      "definition": "模型生成看似合理但事实错误或完全编造内容的现象，是大模型落地的核心挑战。",
+      "mechanism": "原因：训练数据噪声、概率采样随机性、缺乏事实验证机制、模型倾向于'自信地编造'而非承认不知道。",
+      "useCase": "评估RAG系统效果、设计事实校验流程、设置回答拒答边界。",
+      "comparison": "内在幻觉(生成与输入矛盾) vs 外在幻觉(生成与事实不符)。RAG可以缓解但不能根除。",
+      "limitation": "完全消除幻觉目前技术上不可行，所有主流模型都有幻觉问题。",
+      "interview": "幻觉产生的原因、RAG如何缓解幻觉、生产环境中如何处理幻觉问题。",
+      "source": "01_认知阶段.md"
+    },
+    {
+      "title": "灾难性遗忘（Catastrophic Forgetting）",
+      "category": "大模型基础",
+      "definition": "微调后模型在新任务上表现提升但在原有通用任务上性能显著下降的现象。",
+      "mechanism": "参数更新过度偏向新数据分布，覆盖了预训练阶段学到的通用知识。",
+      "useCase": "评估微调风险、设计微调策略（混合数据、PEFT、小学习率）。",
+      "comparison": "全量微调遗忘最严重，LoRA/PEFT能有效缓解；继续预训练(CPT)比直接SFT遗忘少。",
+      "limitation": "没有完美解决方案，所有微调都会有一定程度的遗忘。",
+      "interview": "什么是灾难性遗忘、如何缓解、为什么LoRA比全量微调遗忘少。",
+      "source": "02_大模型微调.md"
+    },
+    {
+      "title": "FlashAttention",
+      "category": "大模型基础",
+      "definition": "通过GPU内存层次优化和分块计算，将自注意力复杂度从O(n²)优化到接近O(n)的算法。",
+      "mechanism": "利用GPU SRAM比HBM快10倍的特性，将QKV分块加载到SRAM中分块计算注意力，避免将完整n×n矩阵写入HBM。",
+      "useCase": "所有现代大模型训练和推理的标配，FlashAttention-2/3持续优化。",
+      "comparison": "vs 标准Attention：速度快2-4倍，显存节省显著；FlashAttention-3进一步利用Hopper架构异步特性。",
+      "limitation": "算法实现复杂、依赖特定GPU架构、某些定制化Attention模式不支持。",
+      "interview": "FlashAttention的原理、为什么能加速、在Transformer的哪个环节起作用。",
+      "source": "01_认知阶段.md"
+    },
+    {
+      "title": "vLLM",
+      "category": "大模型基础",
+      "definition": "面向生产环境的高性能LLM推理引擎，以PagedAttention和连续批处理著称。",
+      "mechanism": "PagedAttention将KV Cache按页管理（类似操作系统虚拟内存），减少显存碎片；Continuous Batching动态合并请求提升GPU利用率。",
+      "useCase": "搭建高并发大模型API服务、企业内部模型推理平台。",
+      "comparison": "vs Ollama：vLLM适合生产高并发，Ollama适合本地开发；vs TGI(HuggingFace)：vLLM性能更优社区更活跃。",
+      "limitation": "部署门槛比Ollama高、对模型兼容性有一定要求、长上下文推理仍需优化。",
+      "interview": "vLLM和Ollama的区别、PagedAttention的原理、什么是连续批处理。",
+      "source": "01_认知阶段(大模型介绍，调用，RAG，Agent）.md"
+    },
+    {
+      "title": "云端API vs 本地部署",
+      "category": "大模型基础",
+      "definition": "大模型两种使用模式：调用云厂商API（按token付费）或在自有硬件上运行开源模型。",
+      "mechanism": "云端API通过HTTP请求调用，本地部署通过Ollama/vLLM/TGI等推理引擎运行模型文件。",
+      "useCase": "云端适合快速原型、生产环境；本地适合数据敏感、离线场景、成本可控。",
+      "comparison": "云端：免运维、最新模型、按量付费；本地：数据私有、无API费用上限、硬件投入大。",
+      "limitation": "云端数据出网有合规风险；本地可用模型规模受硬件限制。",
+      "interview": "什么场景用云端API什么场景用本地部署、混合方案如何设计。",
+      "source": "01_认知阶段(大模型介绍，调用，RAG，Agent）.md"
+    },
+    {
+      "title": "多模态大模型",
+      "category": "大模型基础",
+      "definition": "能同时处理文本、图像、音频、视频等多种输入模态的大模型。",
+      "mechanism": "视觉编码器(ViT)提取图像特征→跨模态对齐层映射到语言空间→LLM处理。代表：GPT-4o、Gemini、Qwen-VL。",
+      "useCase": "图文问答、图表理解、OCR、视频摘要、医疗影像分析、自动驾驶场景理解。",
+      "comparison": "vs 纯文本LLM：多了视觉理解能力；GPT-4o原生多模态 vs 组合式（LLaVA=ViT+LLM）。",
+      "limitation": "训练成本更高、多模态幻觉（看图编造内容）、评估基准不成熟。",
+      "interview": "多模态大模型的架构、GPT-4o和LLaVA的区别、为什么需要跨模态对齐。",
+      "source": "01_认知阶段(大模型介绍，调用，RAG，Agent）.md"
+    },
+    {
+      "title": "BLEU 与 ROUGE（生成评估指标）",
+      "category": "大模型基础",
+      "definition": "文本生成质量自动评估指标：BLEU衡量翻译精度(n-gram精确率)，ROUGE衡量摘要召回率。",
+      "mechanism": "BLEU计算生成文本与参考文本的n-gram匹配精确率+短句惩罚。ROUGE计算参考文本n-gram被生成文本覆盖的比例。",
+      "useCase": "机器翻译评估(BLEU)、文本摘要评估(ROUGE)、微调效果自动对比。",
+      "comparison": "BLEU强调精确率，ROUGE强调召回率。两者都只看表面词匹配不关注语义。BERTScore用BERT计算语义相似度弥补此缺陷。",
+      "limitation": "对同义改写不友好、无法评估事实正确性、需要参考文本。",
+      "interview": "BLEU和ROUGE的区别、为什么需要BERTScore、生成任务还有哪些评估方法。",
+      "source": "07_RAG评估.md"
+    },
+    {
+      "title": "量化（Quantization）",
+      "category": "大模型基础",
+      "definition": "将模型权重从高精度浮点(FP16/BF16)转为低比特整数(INT8/INT4)的技术，省显存保性能。",
+      "mechanism": "通过校准数据统计各层激活值范围，将权重映射到低比特表示。分为PTQ(训练后量化)和QAT(量化感知训练)两大类。",
+      "useCase": "消费级显卡运行大模型、手机端推理、边缘设备部署。",
+      "comparison": "INT8损失极小，INT4轻微损失，INT2明显退化。GPTQ/AWQ/GGUF是主流量化方案。",
+      "limitation": "极低比特(3bit以下)精度损失大、量化后某些任务(数学推理)下降明显。",
+      "interview": "量化的原理、PTQ和QAT的区别、INT8和INT4精度损失大约多少。",
+      "source": "04大模型压缩技术——量化.md"
+    },
+    {
+      "title": "LlamaIndex",
+      "category": "大模型基础",
+      "definition": "面向RAG应用的数据框架，专注文档索引、检索和与LLM的桥接。",
+      "mechanism": "提供文档加载器→节点解析→索引构建→检索器→查询引擎的完整数据流水线。与LangChain互补而非替代。",
+      "useCase": "构建企业知识库问答、文档分析、多文档摘要。",
+      "comparison": "vs LangChain：LlamaIndex专注数据索引和检索，LangChain是通用LLM应用框架。通常组合使用：LlamaIndex处理数据，LangChain编排Agent。",
+      "limitation": "大规模数据场景索引构建慢、复杂查询引擎需要较多配置。",
+      "interview": "LlamaIndex和LangChain的区别、什么是Node和Index。",
+      "source": "01_认知阶段(大模型介绍，调用，RAG，Agent）.md"
+    },
+    {
+      "title": "LoRA（低秩适配微调）",
+      "category": "大模型微调",
+      "definition": "通过在原权重旁插入低秩矩阵进行微调，冻结原参数只训练新增的小矩阵，以极小参数量实现接近全量微调的效果。",
+      "mechanism": "将权重更新ΔW分解为两个低秩矩阵A×B的乘积（r<<d），前向时W'x = Wx + BAx，仅训练A和B。秩r通常取8~64，可减少99%以上可训练参数。",
+      "useCase": "单卡消费级GPU微调大模型、多任务快速切换（每个任务只需存一组LoRA权重）、领域适配和指令微调。",
+      "comparison": "vs 全量微调：LoRA可训练参数少1000倍+，显存省3~4倍，性能接近；vs Adapter：LoRA通过矩阵加法与原始权重合并无推理延迟，Adapter串行插入有额外延迟。",
+      "limitation": "对与原任务差异极大的新任务效果不如全量微调、秩r的选择需经验调节、多个LoRA叠加时可能相互干扰。",
+      "interview": "LoRA的原理和为什么能省显存、r值如何选择、LoRA和全量微调的对比、为什么LoRA可以热切换。",
+      "source": "02_大模型微调进阶.md"
+    },
+    {
+      "title": "QLoRA（量化低秩适配）",
+      "category": "大模型微调",
+      "definition": "在LoRA基础上将基座模型量化为4bit，进一步将微调显存需求压缩到消费级水平。",
+      "mechanism": "核心技术：4-bit NormalFloat量化（信息论最优）、双重量化（对量化常数再量化省0.4bit）、分页优化器（OOM时自动将梯度转入CPU内存）。基座模型4bit冻结+LoRA以BF16训练。",
+      "useCase": "单张RTX 3090/4090微调65B模型、个人开发者低成本微调、数据隐私场景本地微调。",
+      "comparison": "vs LoRA：QLoRA额外省4倍显存（基座INT4 vs FP16），性能几乎无损；vs GPTQ/AWQ：QLoRA用于微调，GPTQ/AWQ主要用于推理量化。",
+      "limitation": "4bit推理时需反量化有一定耗时、极端低比特下数学推理等任务精度下降更明显、双重量化实现复杂调试困难。",
+      "interview": "QLoRA相比LoRA的优势、NormalFloat量化的原理、为什么QLoRA能让个人用消费显卡微调大模型。",
+      "source": "02_大模型微调进阶.md"
+    },
+    {
+      "title": "DPO（直接偏好优化）",
+      "category": "大模型微调",
+      "definition": "无需训练奖励模型，直接用人类偏好对比数据优化策略模型的RLHF替代算法。",
+      "mechanism": "将RLHF的两阶段（训练奖励模型→PPO优化）合并为单一损失函数，直接在偏好对（chosen vs rejected）上最大化好回答与坏回答的相对概率差距。数学本质是对Bradley-Terry偏好模型的重新参数化。",
+      "useCase": "对齐微调（让模型输出符合人类偏好）、替代RLHF简化训练流程、开源模型对齐训练（如Zephyr、Llama3）。",
+      "comparison": "vs RLHF(PPO)：DPO省去奖励模型训练，流程简单稳定，不需在线采样；vs SFT：DPO能利用负样本（rejected回答），SFT只学正样本。",
+      "limitation": "偏好数据质量敏感（标注不一致会严重影响效果）、分布外泛化不如PPO、策略离参考模型太远时可能退化。",
+      "interview": "DPO为什么能替代RLHF、DPO的损失函数直觉、DPO和PPO的优劣对比、偏好数据如何构建。",
+      "source": "02_大模型微调进阶.md"
+    },
+    {
+      "title": "PPO（近端策略优化）",
+      "category": "大模型微调",
+      "definition": "RLHF中用于优化策略模型的标准强化学习算法，通过裁剪策略更新幅度保证训练稳定性。",
+      "mechanism": "奖励模型对模型生成的回答打分→PPO用该分数作为奖励信号更新策略模型→KL散度约束防止策略偏离太远→PPO-Clip对更新幅度进行裁剪(ε=0.2)防止毁灭性更新。四个模型协同：策略模型、参考模型、奖励模型、价值模型。",
+      "useCase": "ChatGPT/Claude等商业模型的对齐训练、需要精确控制模型行为的场景、学术研究中RLHF的默认RL算法。",
+      "comparison": "vs DPO：PPO流程更复杂但泛化更好，需要在线采样；vs TRPO：PPO实现更简单，仅用一阶优化，效果相当；vs 传统REINFORCE：PPO有clip机制训练更稳定。",
+      "limitation": "需同时维护4个模型显存开销大、训练不稳定易模式崩溃、超参数敏感（学习率/KL系数/clip范围）、奖励黑客（模型投机取巧获取高奖励）。",
+      "interview": "PPO在RLHF中的作用、PPO-Clip的原理、为什么需要KL散度约束、PPO和DPO的选择。",
+      "source": "02_大模型微调进阶.md"
+    },
+    {
+      "title": "RLHF（基于人类反馈的强化学习）",
+      "category": "大模型微调",
+      "definition": "三阶段对齐训练范式：SFT→训练奖励模型→PPO强化学习，将人类偏好注入模型使输出更有用、诚实、无害。",
+      "mechanism": "阶段一：收集高质量指令-回答对做SFT；阶段二：对同一prompt的多个回答进行人类偏好排序，训练Bradley-Terry奖励模型；阶段三：用PPO算法以奖励模型为信号优化SFT模型，同时以KL散度约束不偏离太远。",
+      "useCase": "ChatGPT/Claude/Gemini等商业产品的对齐训练、降低模型有害输出、让模型遵循复杂指令。",
+      "comparison": "vs 纯SFT：RLHF能注入主观偏好（什么算'好'回答），SFT只能模仿训练数据；vs DPO：RLHF有显式奖励模型可复用和评估，DPO直接优化偏好对更简单。",
+      "limitation": "标注成本高需要高质量人工标注团队、奖励模型可能过于简单无法捕捉复杂偏好、奖励黑客问题、不同文化价值观偏好难统一。",
+      "interview": "RLHF三个阶段分别做什么、为什么需要奖励模型、RLHF和DPO的区别、RLHF的局限和前沿改进方向。",
+      "source": "02_大模型微调进阶.md"
+    },
+    {
+      "title": "全参数微调（Full Fine-tuning）",
+      "category": "大模型微调",
+      "definition": "在预训练模型基础上用标注数据更新所有模型参数的传统微调方式，效果最强但成本最高。",
+      "mechanism": "加载预训练权重→用下游任务标注数据计算损失→反向传播更新所有层的所有参数→通常使用比预训练小得多的学习率（1e-5量级）以防过拟合和遗忘。需要存储完整模型副本和优化器状态的显存。",
+      "useCase": "有大量高质量标注数据+充足GPU资源时的最优选择、领域大模型定制（如医疗/法律/金融）、学术研究中追求最佳效果的场景。",
+      "comparison": "vs LoRA/PEFT：全量微调效果上限最高但显存需16×模型参数量（含优化器状态），LoRA只需1.2×；vs 继续预训练：全量微调用标注数据做有监督学习，继续预训练用无标注数据做自监督学习。",
+      "limitation": "显存需求大（7B模型需~112GB）、易发生灾难性遗忘、每个任务需存一份完整模型副本存储成本高、训练时间长。",
+      "interview": "全量微调和PEFT的区别、7B模型全量微调需要多大显存、什么场景必须全量微调。",
+      "source": "02_大模型微调进阶.md"
+    },
+    {
+      "title": "PEFT（参数高效微调）",
+      "category": "大模型微调",
+      "definition": "只训练极少参数（<1%）实现下游任务适配的微调方法家族，主要包括LoRA/Adapter/Prefix Tuning/Prompt Tuning。",
+      "mechanism": "核心思想：冻结预训练主干参数，在模型特定位置插入少量可训练参数。LoRA在权重矩阵旁加低秩分解；Adapter在层间插入小瓶颈网络；Prefix Tuning在每层前加可学习的虚拟token；Prompt Tuning只在输入端加可学习软提示。",
+      "useCase": "多任务服务（每个任务只需加载小适配器）、资源受限场景微调、快速实验迭代、联邦学习隐私保护。",
+      "comparison": "LoRA vs Adapter：LoRA无推理延迟可合并权重，Adapter有延迟；Prefix Tuning vs Prompt Tuning：Prefix每层都可学习，Prompt仅输入层。PEFT整体 vs 全量微调：效果接近但参数少1000倍。",
+      "limitation": "极端差异任务效果可能不如全量微调、不同PEFT方法效果差异大需逐个验证、多个PEFT模块叠加管理和版本控制复杂。",
+      "interview": "PEFT有哪些主流方法、各自原理和区别、为什么PEFT能有效、PEFT和全量微调如何选择。",
+      "source": "02_大模型微调进阶.md"
+    },
+    {
+      "title": "RLAIF（基于AI反馈的强化学习）",
+      "category": "大模型微调",
+      "definition": "用大模型替代人类标注者提供偏好反馈的RLHF变体，以AI反馈取代人工反馈降低对齐成本。",
+      "mechanism": "用强LLM（如GPT-4）对模型生成的多个回答进行评分或排序→构建偏好数据集→训练奖励模型→PPO优化。核心差异在于偏好来源从'人类标注'变为'AI裁判'。通常会配合详细评分准则(Constitution)来约束AI裁判的判断标准。",
+      "useCase": "大规模对齐训练（标注成本是RLHF的1/10）、快速迭代原型、Constitutional AI（Anthropic的核心方法）。",
+      "comparison": "vs RLHF：RLAIF成本低可规模化但可能引入AI偏见的系统性偏差，RLHF标注质量更高但成本也高；vs DPO：RLAIF仍需奖励模型训练流程，DPO完全跳过奖励模型。",
+      "limitation": "AI裁判可能放大自身偏见（自己评自己同类）、复杂价值判断AI不如人类准确、过度依赖AI反馈可能导致模型能力退化。",
+      "interview": "RLAIF和RLHF的区别、什么是Constitutional AI、AI反馈和人类反馈各自的优劣。",
+      "source": "02_大模型微调进阶.md"
+    },
+    {
+      "title": "知识蒸馏（Knowledge Distillation）",
+      "category": "模型压缩",
+      "definition": "让小型学生模型学习大型教师模型输出分布的训练技术，将大模型能力迁移到小模型。",
+      "mechanism": "教师模型对训练数据生成软标签（完整概率分布而非硬标签one-hot）→学生模型不仅学习正确答案还学习教师的'错误分布规律'（温度T>1 soften概率）→损失=KL(学生||教师)+交叉熵(学生||真实标签)。高温T让类别间相对关系更明显。",
+      "useCase": "训练小模型（<7B）复现大模型效果、端侧部署模型（手机/IoT）、降低推理成本和延迟。",
+      "comparison": "vs 模型剪枝：蒸馏产出独立小模型，剪枝修改原模型结构；vs 量化：蒸馏是训练新技术，量化是压缩已有权重精度；蒸馏常与量化组合使用效果更好。",
+      "limitation": "学生模型能力上限受教师约束、教师模型可获得性（最强模型多为闭源API）、蒸馏过程需大量无标注数据、复杂推理能力蒸馏困难。",
+      "interview": "知识蒸馏的原理、温度参数T的作用、为什么软标签比硬标签好、蒸馏和量化的区别。",
+      "source": "05_大模型压缩技术——蒸馏.md"
+    },
+    {
+      "title": "PTQ（训练后量化）",
+      "category": "模型压缩",
+      "definition": "模型训练完成后直接对权重进行低精度转换，无需重新训练，是量化部署的快速方案。",
+      "mechanism": "用校准数据集统计各层激活值分布→确定每层量化参数（scale和zero-point）→将FP16权重量化映射为INT8/INT4→推理时反量化回FP16计算（或直接用整数计算）。GPTQ用OBQ算法逐列量化+权重补偿；AWQ通过观察激活值重要性保留关键通道高精度。",
+      "useCase": "快速部署量化模型到消费显卡或移动端、Ollama/llama.cpp直接使用GGUF格式量化模型、对已有FP16模型压缩省显存。",
+      "comparison": "vs QAT：PTQ无需重新训练省时省力但精度损失比QAT大；GPTQ vs AWQ：GPTQ基于权重重要性逐列量化，AWQ基于激活值重要性保留关键通道，AWQ在<4bit时通常效果更好。",
+      "limitation": "低比特（<3bit）精度损失显著、校准数据集代表性影响大（分布外数据精度差）、某些层（如attention输出层）对量化特别敏感。",
+      "interview": "PTQ和QAT的区别、GPTQ/AWQ的原理差异、INT4量化的精度损失大约多少、校准数据集如何选择。",
+      "source": "04_大模型压缩技术——量化.md"
+    },
+    {
+      "title": "QAT（量化感知训练）",
+      "category": "模型压缩",
+      "definition": "在训练过程中模拟量化误差，让模型学习适应低精度表示，精度损失远小于PTQ。",
+      "mechanism": "前向传播时模拟量化操作（weight→quantize→dequantize→激活），反向传播通过直通估计器STE绕过取整函数传递梯度。模型在训练中逐渐适应量化引入的噪声。通常先全精度预训练→QAT微调几个epoch完成。",
+      "useCase": "对精度要求极高的低比特部署（如INT4手机端推理）、自动驾驶等对延迟和精度都有严格要求的场景、芯片厂商定制模型。",
+      "comparison": "vs PTQ：QAT精度更高（INT4可接近FP16）但需重新训练耗时更长；vs 全精度训练：QAT效果接近但推理快4倍+显存省4倍。",
+      "limitation": "需要完整训练流程和算力（不能像PTQ一键完成）、STE梯度近似存在偏差、训练不稳定需要调参经验。",
+      "interview": "QAT和PTQ各自适用什么场景、STE直通估计器的原理、为什么QAT比PTQ精度高。",
+      "source": "04_大模型压缩技术——量化.md"
+    },
+    {
+      "title": "Rejection Sampling（拒绝采样）",
+      "category": "模型压缩",
+      "definition": "在模型压缩中，用大模型生成大量候选回答，筛选高质量样本作为学生模型训练数据的筛选方法。",
+      "mechanism": "Teacher模型对每个问题生成N个候选回答（N通常3~10）→用奖励模型或规则（长度/格式/事实一致性）过滤低质量回答→保留top-1或top-K高质量回答→作为Student模型SFT训练数据。Best-of-N采样：生成N个回答只保留最优的。",
+      "useCase": "知识蒸馏的数据准备阶段、生成高质量微调数据（如Alpaca数据集就是这样从GPT-3.5蒸馏的）、数据清洗和增强。",
+      "comparison": "vs 直接使用Teacher输出：拒绝采样多了一道质量筛选，显著提升数据质量上限；vs 人工标注：拒绝采样用AI自动筛选成本低可规模化，但质量不如人工。",
+      "limitation": "采样质量依赖Teacher和奖励模型能力、计算开销大（需生成N倍数据）、筛选标准难以完备可能导致偏差。",
+      "interview": "拒绝采样在蒸馏中的作用、Best-of-N原理、Alpaca数据集如何生成、拒绝采样如何保证数据质量。",
+      "source": "05_大模型压缩技术——蒸馏.md"
+    },
+    {
+      "title": "提示工程（Prompt Engineering）",
+      "category": "提示工程",
+      "definition": "通过精心设计和优化输入提示词，引导大模型生成符合预期的输出的系统性方法。",
+      "mechanism": "核心原则：清晰指令（角色+任务+格式+约束）、提供上下文（背景信息+范例）、迭代优化（观察输出→分析偏差→调整提示→再测试）。提示=指令+上下文+输入+输出指示器。好的提示工程能将模型准确率提升30%~50%。",
+      "useCase": "所有大模型应用开发的必备技能、客服机器人话术设计、代码生成辅助、内容创作指导。",
+      "comparison": "vs 传统编程：提示工程是自然语言'编程'，非确定性输出；vs 微调：提示工程零成本快速迭代但不能改变底层模型能力，微调成本高但可根本性调整模型行为。",
+      "limitation": "效果依赖模型本身能力、跨模型迁移性差（不同模型对同一提示反应不同）、长提示被模型忽略（Lost in the Middle）。",
+      "interview": "什么是提示工程、好的Prompt有哪些要素、提示工程和微调的区别和选择依据。",
+      "source": "03_提示词.md"
+    },
+    {
+      "title": "消息角色（Message Roles）",
+      "category": "提示工程",
+      "definition": "大模型对话API中区分消息来源和作用的角色标记，主要包括System/User/Assistant三种角色。",
+      "mechanism": "System消息：设定AI行为准则和角色人设（最高优先级，模型必须遵守）；User消息：用户输入的问题或指令；Assistant消息：AI历史回答或预设的理想回答范例。模型按时间序处理消息列表，System在最前设置全局约束。",
+      "useCase": "构建性格一致的客服Bot（System设定'你是专业友善的客服'）、Few-shot示例提供（Assistant中预设理想回答格式）、多轮对话历史管理。",
+      "comparison": "System vs User：System设规则身份，User给具体任务；User vs Assistant：User是输入，Assistant是期望输出；不同模型(OpenAI/Claude/Qwen)对System遵循程度不同，Claude最强。",
+      "limitation": "不是所有模型都严格遵循System消息、过长的System消息可能被忽略、角色设计不当可能产生角色混淆。",
+      "interview": "三种消息角色的作用和区别、System消息为什么优先级最高、如何处理多轮对话中的角色切换。",
+      "source": "03_提示词.md"
+    },
+    {
+      "title": "Few-shot提示（少样本提示）",
+      "category": "提示工程",
+      "definition": "在Prompt中给模型提供几个输入-输出范例，让模型通过'类比学习'理解任务格式和期望输出风格的提示方法。",
+      "mechanism": "在用户输入之前，插入2-5个格式正确的高质量范例（示例输入→期望输出）。模型通过上下文学习从范例中推断任务模式、输出格式、风格口吻。示例选择遵循：多样性（覆盖不同case）、正确性（不能有错例）、代表性（典型场景）。",
+      "useCase": "需要特定输出格式（JSON/表格/代码风格）的场景、情感分类/实体提取等标注任务、让模型模仿特定写作风格。",
+      "comparison": "vs Zero-Shot：Few-shot给范例输出更可控更精准，Zero-Shot省token更快；2-shot到5-shot提升明显，但超过10-shot收益递减甚至有害。",
+      "limitation": "消耗更多token增加成本和延迟、错误范例会严重误导模型、长上下文中范例可能被遗忘。",
+      "interview": "Few-shot和Zero-shot的区别、如何选择范例、为什么不是范例越多越好。",
+      "source": "03_提示词.md"
+    },
+    {
+      "title": "Zero-Shot提示（零样本提示）",
+      "category": "提示工程",
+      "definition": "直接给模型任务指令而不提供任何范例的提示方式，依赖模型的指令遵循能力和通用知识。",
+      "mechanism": "仅提供任务描述+输入数据，不给任何示例输出。模型完全依赖预训练和指令微调中获得的任务理解能力来推断期望行为。大模型涌现能力使Zero-Shot在足够大的模型上效果良好。",
+      "useCase": "简单直接任务（翻译、摘要、分类）、快速原型验证、不希望范例限制模型创造力的开放性任务、token预算有限时。",
+      "comparison": "vs Few-Shot：Zero-Shot省token不需设计范例但输出格式和风格不可控；从Few-Shot可以降级为Zero-Shot（移除范例测试模型是否内化了任务），反向需要重新设计。",
+      "limitation": "对复杂或特殊格式任务输出不稳定、依赖模型本身对任务的理解程度、小模型Zero-Shot效果远不如大模型。",
+      "interview": "Zero-Shot依赖模型的什么能力、什么任务适合Zero-Shot、Zero-Shot和Few-Shot如何选择。",
+      "source": "03_提示词.md"
+    },
+    {
+      "title": "思维链CoT（Chain of Thought）",
+      "category": "提示工程",
+      "definition": "在提示中引导模型展示逐步推理过程再给出最终答案的方法，显著提升复杂推理任务的准确率。",
+      "mechanism": "在Prompt中加'让我们一步一步思考(Let's think step by step)'或提供包含推理步骤的Few-shot范例。模型将复杂问题分解为子步骤逐步求解，每一步的中间结果作为下一步的上下文，最终汇聚到正确答案。本质是让模型把隐含推理过程显式化。",
+      "useCase": "数学应用题求解、逻辑推理与拼图、多跳问答、代码调试分析、复杂决策规划。",
+      "comparison": "vs 直接回答：CoT在数学推理GSM8K上准确率可从~60%提升到~90%；vs CoT-SC（自洽性）：CoT是单次推理链，SC做多次采样投票更稳定；vs ToT（思维树）：CoT是线性单链，ToT是多分支树搜索。",
+      "limitation": "消耗更多输出token增加延迟和成本、无效推理步骤可能链式传播错误、对简单任务反而冗余。",
+      "interview": "CoT为什么有效、CoT和标准Prompt的区别、什么类型任务最适合CoT、CoT和Few-Shot如何组合。",
+      "source": "03_提示词.md"
+    },
+    {
+      "title": "自我一致性（Self-Consistency）",
+      "category": "提示工程",
+      "definition": "对同一问题多次采样（用不同随机种子+CoT推理），对多个答案投票取多数结果的方法，替代贪心解码的单一答案。",
+      "mechanism": "对同一输入用非零温度独立生成K条推理路径（K通常5~20）→从每条路径中提取最终答案→对答案进行多数投票（分类任务）或聚合（生成任务）→输出一致性最高的答案。核心假设：正确的推理路径比错误的更一致。",
+      "useCase": "需要高可靠性的推理任务（数学/法律/医疗）、自动化评测和标注、对单次推理结果不确定时的校验。",
+      "comparison": "vs 单次CoT：SC稳定性和准确率显著提升（GSM8K从CoT的~90%提升到~95%+），但成本增加K倍；vs 集成学习(Ensemble)：SC是同模型多次采样投票，集成是多个不同模型投票。",
+      "limitation": "推理成本成倍增加（K次完整CoT推理）、对模型自身推理能力差的场景无效（垃圾进垃圾出）、投票聚合方式对生成式答案不直接适用。",
+      "interview": "Self-Consistency的原理、为什么多次采样+投票比单次更可靠、SC和集成学习的区别、K值如何选择。",
+      "source": "03_提示词.md"
+    },
+    {
+      "title": "监督学习",
+      "category": "传统机器学习",
+      "definition": "利用带标签的训练数据学习输入到输出的映射关系，预测未知样本的标签或数值。",
+      "mechanism": "模型通过最小化预测值与真实标签之间的损失函数（如MSE、交叉熵）来优化参数，常见算法包括线性回归、决策树、SVM等。",
+      "useCase": "垃圾邮件分类、房价预测、疾病诊断、图像识别、信用评估等有标注数据的场景。",
+      "comparison": "vs 无监督学习：监督学习需要标注数据，无监督学习不需要；vs 强化学习：监督学习有标准答案，强化学习通过奖惩信号学习。",
+      "limitation": "标注成本高，标签质量影响模型上限，泛化能力受限于训练数据分布。",
+      "interview": "监督学习和无监督学习的区别、什么是损失函数、分类和回归的评估指标分别有哪些。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "无监督学习",
+      "category": "传统机器学习",
+      "definition": "从未标注的数据中发现隐藏模式、结构或分布规律的机器学习范式。",
+      "mechanism": "通过聚类（如K-Means寻找数据自然分组）、降维（如PCA保留最大方差方向）或密度估计等方法，捕捉数据内在结构。",
+      "useCase": "用户分群、异常检测、推荐系统冷启动、数据可视化、预处理降维。",
+      "comparison": "vs 监督学习：无监督不需要标签，但结果难以客观评价；vs 自监督学习：自监督有'伪标签'（如预测下一个词），无监督完全没有标签信号。",
+      "limitation": "缺乏客观的评价标准，聚类数量通常需人工指定，结果可解释性较差。",
+      "interview": "无监督学习的典型任务有哪些、K-Means的K值怎么选、PCA的工作原理是什么。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "线性回归",
+      "category": "传统机器学习",
+      "definition": "假设自变量与因变量之间存在线性关系，通过拟合一条直线（或超平面）来预测连续值的最基础回归算法。",
+      "mechanism": "使用最小二乘法或梯度下降来最小化预测值与真实值之间的均方误差(MSE)，得到最优的权重w和偏置b, 模型形式为y = wx + b。",
+      "useCase": "房价预测、销售额预估、气温预测、经济指标分析等线性关系明显的场景，也是深度学习的基础组件。",
+      "comparison": "vs 逻辑回归：线性回归预测连续值，逻辑回归做二分类（加了一层Sigmoid）；vs 多项式回归：线性回归假设直线关系，多项式回归可拟合曲线。",
+      "limitation": "假设自变量与因变量线性关系过强，对异常值敏感，多重共线性导致系数不稳定。",
+      "interview": "线性回归的损失函数、最小二乘法和梯度下降的区别、什么是多重共线性以及如何处理。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "决策树",
+      "category": "传统机器学习",
+      "definition": "通过树形结构的if-else规则对数据进行分裂，最终在叶子节点给出预测结果的直观可解释模型。",
+      "mechanism": "每次分裂选择使信息增益最大（ID3/C4.5用信息熵）或基尼不纯度最小（CART）的特征作为节点，递归构建直至满足停止条件。",
+      "useCase": "客户流失预测、信贷审批规则、医疗诊断辅助等需要可解释规则的分类和回归场景。",
+      "comparison": "vs 随机森林：决策树是单一模型容易过拟合，随机森林是集成多棵树投票更好；vs 逻辑回归：决策树天然支持非线性边界，逻辑回归只能线性划分。",
+      "limitation": "容易过拟合（需要剪枝），对数据微小变化敏感（方差大），倾向于选择取值多的特征。",
+      "interview": "信息增益和基尼系数的区别、决策树如何剪枝、为什么需要特征选择标准。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "随机森林",
+      "category": "传统机器学习",
+      "definition": "通过集成多棵决策树（Bagging思想），每棵树随机采样数据+特征，最终投票或平均得到结果的集成学习算法。",
+      "mechanism": "Bootstrap采样生成多个不同训练集→每棵树独立训练（节点分裂随机选特征子集）→分类用多数投票/回归用平均值，随机性降低方差。",
+      "useCase": "金融风控、生物信息学特征选择、遥感图像分类等需要高精度且不易过拟合的场景。",
+      "comparison": "vs XGBoost：随机森林是Bagging并行弱学习器，XGBoost是Boosting串行残差拟合；vs 单棵决策树：随机森林方差低不易过拟合。",
+      "limitation": "树多时推理速度慢、内存占用大，超参数调优复杂，对高维稀疏数据效果不如线性模型。",
+      "interview": "随机森林和XGBoost的区别、Bagging和Boosting的思想区别、为什么随机森林不容易过拟合。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "XGBoost",
+      "category": "传统机器学习",
+      "definition": "基于梯度提升树(GBDT)的极致优化实现，通过二阶泰勒展开和正则化项在速度和精度上碾压同类Boosting算法的工业级利器。",
+      "mechanism": "每棵树拟合前一棵的残差（梯度），使用二阶导数加速收敛，加入L1/L2正则防过拟合，支持列抽样和并行化特征排序。",
+      "useCase": "Kaggle竞赛首选、金融风控、推荐系统排序、点击率预估等结构化表格数据的分类回归任务。",
+      "comparison": "vs 随机森林：XGBoost Boosting串行拟合残差收窄偏差，随机森林Bagging并行降低方差；vs LightGBM：XGBoost按层分裂更准确但慢，LightGBM按叶子分裂更快。",
+      "limitation": "相比随机森林参数多调参复杂，对噪声敏感容易过拟合，不适合高维稀疏文本（不如深度学习）。",
+      "interview": "XGBoost和GBDT的区别、为什么XGBoost比GBDT快、树的分裂方式是怎样的。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "支持向量机SVM",
+      "category": "传统机器学习",
+      "definition": "寻找最大间隔超平面分割两类数据的经典分类算法，通过核技巧将低维线性不可分问题映射到高维空间解决。",
+      "mechanism": "最大化支持向量到超平面的距离（最大间隔），通过拉格朗日对偶转为凸优化问题求解，核函数（RBF/多项式）隐式完成高维映射无需显式计算。",
+      "useCase": "小样本高维数据分类（如文本分类、手写数字识别）、生物信息学基因分类。",
+      "comparison": "vs 逻辑回归：SVM只依赖支持向量（边界点），逻辑回归使用全部样本；vs 神经网络：SVM在小样本上更好，神经网络需要大量数据。",
+      "limitation": "大数据集训练慢（O(n²)-O(n³)）、核函数选择依赖经验、多分类需OVO/OVR策略、概率输出需要额外Platt缩放。",
+      "interview": "SVM的核心思想、软间隔和硬间隔的区别、核函数的作用、什么是支持向量。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "KNN近邻算法",
+      "category": "传统机器学习",
+      "definition": "根据待预测样本的K个最近邻居的标签来投票或平均给出预测结果的惰性学习算法，无需显式训练。",
+      "mechanism": "计算待预测样本与所有训练样本的距离（欧氏距离/曼哈顿距离/余弦相似度），选距离最小的K个邻居，分类用多数投票、回归用均值。",
+      "useCase": "推荐系统协同过滤、手写数字识别、异常检测，适合样本量不大且特征维度较低的场景。",
+      "comparison": "vs K-Means：KNN是监督学习需要标签，K-Means是无监督聚类；vs 参数模型（LR/SVM）：KNN无需训练但推理时需要遍历全量数据，内存和计算开销大。",
+      "limitation": "所有计算在推理时完成（惰性学习），大数据集推理极慢，高维空间距离失效（维度灾难），对K值敏感。",
+      "interview": "KNN的K值怎么选、为什么说KNN是惰性学习、距离度量方式有哪些、维度灾难是什么。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "朴素贝叶斯",
+      "category": "传统机器学习",
+      "definition": "基于贝叶斯定理加'特征条件独立'假设的分类算法，计算简单且在小数据集上表现优异。",
+      "mechanism": "计算先验概率P(类别)和条件概率P(特征|类别)，用贝叶斯公式求后验概率P(类别|特征)，取最大后验概率的类别。'朴素'体现在假设所有特征相互独立。",
+      "useCase": "文本分类（垃圾邮件过滤）、情感分析、文本主题分类、实时预测等特征相对独立的场景。",
+      "comparison": "vs 逻辑回归：朴素贝叶斯是生成模型（对P(x|y)建模），逻辑回归是判别模型（直接建模P(y|x)）；vs 决策树：朴素贝叶斯假设特征独立，决策树能捕捉特征交互。",
+      "limitation": "强特征独立假设在实际中很少成立，对特征分布假设敏感，零概率问题需拉普拉斯平滑。",
+      "interview": "什么是贝叶斯定理、朴素贝叶斯'朴素'在哪、什么是拉普拉斯平滑、生成模型和判别模型的区别。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "K-Means聚类",
+      "category": "传统机器学习",
+      "definition": "将数据划分成K个簇的无监督算法，使簇内样本尽量相似、簇间尽量不同，迭代优化簇中心直至收敛。",
+      "mechanism": "随机选K个初始质心→每个样本归入距离最近的质心所在簇→重新计算每个簇的均值作为新质心→重复直到质心不再变化或达到最大迭代次数。",
+      "useCase": "用户画像分群、图像压缩色彩量化、文档聚类、异常检测中先聚类再找离群点。",
+      "comparison": "vs DBSCAN：K-Means需要预设K且只能发现球形簇，DBSCAN无需预设簇数且能发现任意形状簇还能去噪；vs 层次聚类：层次聚类可生成树状图看到不同粒度分区。",
+      "limitation": "K值需预先设定（肘部法则辅助）、对初始质心敏感（需K-Means++优化）、只能发现球形簇、对噪声和异常值敏感。",
+      "interview": "K值怎么确定、K-Means++和普通K-Means的区别、为什么对初始质心敏感、肘部法则的原理。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "PCA主成分分析",
+      "category": "传统机器学习",
+      "definition": "通过线性变换将高维数据投影到方差最大的几个正交方向（主成分），在尽量保留信息的前提下实现降维。",
+      "mechanism": "计算协方差矩阵的特征值和特征向量→按特征值降序排列取前K个→将数据投影到前K个特征向量构成的新坐标系中。各主成分互相正交，第一主成分方差最大。",
+      "useCase": "高维数据可视化（降维到2-3维）、特征压缩去噪、消除多重共线性、图像数据预处理。",
+      "comparison": "vs t-SNE：PCA是线性降维保留全局结构，t-SNE是非线性降维适合可视化但不适合作为后续模型输入；vs LDA：PCA是无监督降维，LDA是监督降维（最大化类间差异）。",
+      "limitation": "只能捕获线性结构、对尺度敏感需要标准化、选择保留多少主成分有主观性、主成分可解释性差。",
+      "interview": "PCA的原理和数学步骤、如何选择主成分数量、PCA和t-SNE的区别、为什么PCA前要标准化。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "过拟合与欠拟合",
+      "category": "传统机器学习",
+      "definition": "过拟合指模型在训练集上表现完美但在测试集上表现差（高方差），欠拟合指模型在训练集上就表现不佳（高偏差），是模型训练的两种核心失效模式。",
+      "mechanism": "过拟合因模型过于复杂记住了训练数据噪声而非真实规律；欠拟合因模型太简单无法捕捉数据内在模式。偏差-方差权衡就是要在两者间找到平衡点。",
+      "useCase": "判断模型是否需要更多数据/特征工程/正则化/更简单模型（过拟合），或需要更复杂模型/更多特征/减小正则化（欠拟合）。",
+      "comparison": "过拟合=高方差低偏差，欠拟合=高偏差低方差。好的模型在偏差和方差间取得均衡。",
+      "limitation": "判断过拟合还是欠拟合需要验证集，离线数据集和线上分布差异可能导致误判。",
+      "interview": "过拟合和欠拟合怎么判断、怎么分别解决、什么是偏差方差权衡、正则化的原理是什么。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "特征工程",
+      "category": "传统机器学习",
+      "definition": "对原始数据进行清洗、变换、选择与构造，将领域知识转化为模型可学习的有效特征的过程，数据和特征决定了机器学习的上限。",
+      "mechanism": "包括特征构造（交叉组合/业务衍生）、特征选择（过滤法/包裹法/嵌入法）、特征变换（标准化/归一化/分箱/独热编码）、降维等手段提升模型输入质量。",
+      "useCase": "所有机器学习项目的预处理阶段，特别是结构化数据建模（如风控特征衍生、用户画像特征构造）。",
+      "comparison": "vs 深度学习：传统ML特征工程靠人工，深度学习（尤其是CNN/Transformer）可自动学习特征；但结构化数据领域手工特征工程仍然有价值。",
+      "limitation": "高度依赖领域知识、耗时长、过度特征构造可能导致过拟合或维度灾难。",
+      "interview": "特征工程包含哪些步骤、特征选择有哪些方法、为什么需要特征标准化、One-Hot编码和Label Encoding的区别。",
+      "source": "基础机器学习.md"
+    },
+    {
+      "title": "反向传播",
+      "category": "深度学习",
+      "definition": "通过链式求导法则从输出层向输入层逐层计算损失函数对各参数梯度的算法，是训练所有深度神经网络的核心引擎。",
+      "mechanism": "先正向传播计算预测值和损失→反向传播用链式法则求每层参数梯度（偏导数）→梯度下降用梯度更新参数。PyTorch/TensorFlow的autograd自动完成此过程。",
+      "useCase": "所有神经网络的训练都必须通过反向传播计算梯度，是连接损失函数和参数更新的桥梁。",
+      "comparison": "vs 正向传播：正向计算输出，反向计算梯度；vs 数值微分：反向传播精确且高效，数值微分慢且精度低。",
+      "limitation": "深层网络容易出现梯度消失/爆炸、计算图和中间变量占用大量显存。",
+      "interview": "反向传播的数学原理、链式法则是什么、PyTorch的autograd怎么实现自动求导。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "激活函数",
+      "category": "深度学习",
+      "definition": "为神经网络引入非线性的函数，接在线性变换(Wx+b)之后，使网络能拟合任意复杂函数而非仅是线性组合。",
+      "mechanism": "Sigmoid将输出压缩到(0,1)适合二分类输出层；ReLU=max(0,x)简单高效缓解梯度消失；GELU在Transformer中广泛使用。没有激活函数多层等于一层。",
+      "useCase": "ReLU是隐藏层默认选择；Sigmoid用于二分类输出层；Softmax用于多分类输出层；GELU用于Transformer模型。",
+      "comparison": "Sigmoid有梯度饱和问题（x很大或很小时梯度接近0），ReLU无左侧饱和但神经元可能死亡（输出一直0），LeakyReLU和GELU是改进版。",
+      "limitation": "ReLU在x<0时梯度为0导致神经元永久死亡；Sigmoid/Tanh存在梯度饱和；激活函数选择影响收敛速度。",
+      "interview": "为什么需要激活函数、ReLU比Sigmoid好在哪、什么是神经元死亡、不同激活函数的适用场景。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "CNN卷积神经网络",
+      "category": "深度学习",
+      "definition": "通过卷积核在图像上滑动提取局部特征、配合池化层降采样、最后全连接层分类的专用图像处理神经网络。",
+      "mechanism": "卷积层(局部连接+权值共享)提取边缘/纹理/形状特征→ReLU激活引入非线性→池化层(MaxPool/AvgPool)降维保留关键特征→堆叠多层逐级抽象→Flatten展平→FC分类输出。",
+      "useCase": "图像分类、目标检测(Faster R-CNN/YOLO)、图像分割(U-Net)、人脸识别、医学影像分析。",
+      "comparison": "vs MLP全连接：CNN权值共享大幅度减少参数量且提取空间平移不变特征；vs Vision Transformer：CNN用卷积核天然捕捉局部特征，ViT用自注意力全局建模。",
+      "limitation": "需要大量标注图像训练、感受野受卷积核大小限制、对旋转缩放敏感、大核大通道模型推理慢。",
+      "interview": "卷积层和全连接层的区别、什么是权值共享、池化层的作用、为什么CNN适合处理图像。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "RNN循环神经网络",
+      "category": "深度学习",
+      "definition": "通过隐藏状态在时间步之间传递信息的序列建模网络，每个时刻的输出依赖当前输入和上一时刻的隐藏状态。",
+      "mechanism": "h_t = tanh(Wx_t + Uh_{t-1} + b)，同组参数W/U/b在所有时间步共享，通过时间反向传播(BPTT)训练。",
+      "useCase": "文本生成、序列标注、时间序列预测、机器翻译（早期方案）等有序序列数据。",
+      "comparison": "vs LSTM/GRU：RNN参数少但无法解决长程依赖（梯度消失），LSTM引入门控机制缓解；vs Transformer：RNN是串行处理，Transformer可以并行处理整个序列。",
+      "limitation": "梯度消失/爆炸导致无法捕捉长距离依赖、串行推理无法并行化效率低、实际工程已被LSTM/Transformer取代。",
+      "interview": "RNN和CNN的区别、为什么RNN适合序列数据、什么是BPTT、RNN的梯度消失问题怎么解决。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "LSTM长短期记忆网络",
+      "category": "深度学习",
+      "definition": "通过三门控机制（遗忘门、输入门、输出门）和细胞状态来选择性记忆和遗忘信息的改进版RNN，有效缓解长程依赖问题。",
+      "mechanism": "遗忘门决定丢弃多少旧记忆→输入门决定写入多少新信息→细胞状态c_t更新（长记忆载体）→输出门决定输出多少隐藏状态h_t。门控都是Sigmoid函数输出0-1控制信息流。",
+      "useCase": "机器翻译、语音识别、时间序列预测、文本生成等需要捕捉长距离依赖的序列任务。",
+      "comparison": "vs RNN：LSTM多了门控和细胞态，可学习长程依赖（100-1000步），RNN只能几到几十步；vs GRU：LSTM三门控参数量大，GRU两门控更轻量。",
+      "limitation": "仍为串行计算无法并行、参数量大训练慢、极长序列效果不如Transformer的Self-Attention。",
+      "interview": "LSTM的三个门分别起什么作用、细胞状态和隐藏状态的区别、为什么LSTM能缓解梯度消失、为什么现在被Transformer取代。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "GRU门控循环单元",
+      "category": "深度学习",
+      "definition": "LSTM的轻量级变体，将三门控简化为两门控（重置门+更新门），合并细胞状态与隐藏状态，参数更少但效果接近。",
+      "mechanism": "重置门r_t决定合并多少历史信息进候选状态→更新门z_t决定保留多少旧状态vs写入多少新状态（LSTM遗忘+输入门的合并）。公式比LSTM少但表达能力接近。",
+      "useCase": "与LSTM相同但更偏好计算资源受限场景，LSTM和GRU通常可互换使用。",
+      "comparison": "vs LSTM：GRU参数量约LSTM的3/4，训练稍快，但LSTM在某些大数据集上略优；vs 标准RNN：GRU解决了梯度消失但参数量增加。",
+      "limitation": "与LSTM共享串行计算不可并行的缺点，超长序列不如Transformer。",
+      "interview": "GRU和LSTM的门结构区别、为什么GRU比LSTM参数少、选LSTM还是GRU的准则。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "词向量",
+      "category": "深度学习",
+      "definition": "将词语映射为固定维度的稠密实数向量，使语义相近的词在向量空间中距离也近，是NLP深度学习的基础输入表示。",
+      "mechanism": "Word2Vec通过CBOW（上下文预测中心词）或Skip-Gram（中心词预测上下文）训练；GloVe利用全局词共现矩阵分解；大模型中词向量是Embedding层的一部分随网络端到端训练。",
+      "useCase": "文本分类、情感分析、机器翻译、语义搜索等所有NLP任务的输入表示层。",
+      "comparison": "vs One-Hot：词向量低维稠密有语义（国王-男人+女人≈女王），One-Hot高维稀疏无语义；Word2Vec vs GloVe：Word2Vec局部窗口，GloVe兼顾全局共现。",
+      "limitation": "静态词向量（Word2Vec）无法处理一词多义（苹果=水果vs公司），需要BERT等上下文相关词向量。",
+      "interview": "Word2Vec的CBOW和Skip-Gram的区别、词向量怎么体现语义、静态词向量和动态词向量的区别。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "Seq2Seq序列到序列",
+      "category": "深度学习",
+      "definition": "编码器-解码器架构，编码器将输入序列压缩为上下文向量，解码器从该向量逐步生成输出序列，是机器翻译等不定长序列转换任务的经典框架。",
+      "mechanism": "编码器(通常是RNN/LSTM)将输入序列逐词处理后输出最后的隐藏状态作为上下文向量→解码器RNN以该向量为初始状态逐词生成输出序列，训练用Teacher Forcing加速。",
+      "useCase": "机器翻译、文本摘要、对话生成、代码生成等输入输出都是序列的任务。",
+      "comparison": "vs 纯RNN生成：Seq2Seq支持输入输出长度不同；vs Transformer：Seq2Seq基于RNN有信息瓶颈（压缩到一个向量），Transformer用注意力直接跨位置访问消除瓶颈。",
+      "limitation": "上下文向量成为信息瓶颈（长输入信息压缩损失），无注意力机制时长序列效果差，现已被Transformer取代。",
+      "interview": "Seq2Seq的基本架构、什么是Teacher Forcing、上下文向量瓶颈问题怎么解决。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "注意力机制",
+      "category": "深度学习",
+      "definition": "让模型在生成每个输出时动态关注输入序列的不同位置并分配不同权重的技术，解决了Seq2Seq的信息瓶颈问题。",
+      "mechanism": "计算Query(解码器状态)和每个Key(编码器状态)的相似度→Softmax归一化为注意力权重→对Value(编码器状态)加权求和得到上下文向量。公式: Attention(Q,K,V)=softmax(QK^T/√d_k)V。",
+      "useCase": "机器翻译中的对齐、文本摘要的关键句定位、Transformer的所有层、多模态模型图文对齐。",
+      "comparison": "vs 无注意力Seq2Seq：注意力使解码器能直接访问每个编码器位置，无信息瓶颈；Soft Attention vs Hard Attention：软注意力处处可导可端到端训练。",
+      "limitation": "自注意力计算复杂度是序列长度的平方O(n²)，长序列计算和显存开销大。",
+      "interview": "注意力机制的核心公式、QKV分别是什么、为什么除以√d_k、自注意力和交叉注意力的区别。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "Transformer",
+      "category": "深度学习",
+      "definition": "完全基于注意力机制的序列转换架构，抛弃RNN/CNN，通过自注意力和位置编码并行处理序列，是大语言模型的基石。",
+      "mechanism": "编码器：输入Embedding+位置编码→多头自注意力(MHA)→Add&Norm→前馈网络(FFN)→Add&Norm，堆叠N层。解码器：多了交叉注意力层（Q来自解码器，KV来自编码器输出）。",
+      "useCase": "所有现代大语言模型(GPT/BERT/LLaMA)的基础架构，以及机器翻译、文本摘要、图像识别(ViT)等几乎所有AI领域。",
+      "comparison": "vs RNN/LSTM：Transformer可并行计算速度快，自注意力全局视野无长程依赖问题；BERT编码器-only用于理解，GPT解码器-only用于生成，T5编解码器完整版用于序列转换。",
+      "limitation": "序列长度平方的复杂度O(n²)限制长序列处理、缺少归纳偏置需要更多数据训练、推理时KV Cache显存占用大。",
+      "interview": "Transformer的核心组件有哪些、自注意力公式怎么推导、为什么需要位置编码、LayerNorm和BatchNorm的区别。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "梯度下降",
+      "category": "深度学习",
+      "definition": "沿着损失函数梯度反方向更新参数的迭代优化算法，目标是找到使损失函数最小的参数值，是深度学习的训练核心。",
+      "mechanism": "θ = θ - α * ∇L(θ)，其中α是学习率，∇L(θ)是损失函数对各参数的梯度。BGD全量、SGD单样本、Mini-Batch GD折中=深度学习标配。",
+      "useCase": "所有神经网络和可微模型的参数优化，是现代机器学习的基础优化方法。",
+      "comparison": "BGD稳定但慢，SGD快但震荡大，Mini-Batch GD平衡速度和稳定性。Adam在SGD基础上加入动量+自适应学习率，是当前最常用优化器。",
+      "limitation": "可能陷入局部最优或鞍点、学习率选择困难过大不收敛过小收敛慢、病态条件数导致震荡。",
+      "interview": "SGD/Adam的区别、为什么使用Mini-Batch、学习率怎么调、什么是动量和自适应学习率。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "梯度消失与梯度爆炸",
+      "category": "深度学习",
+      "definition": "深层网络反向传播中，梯度逐层相乘导致浅层参数梯度趋近于零（消失）或趋向无穷大（爆炸），是深层网络训练的经典障碍。",
+      "mechanism": "链式求导使梯度是各层导数的连乘积→如果导数接近0(<1)连乘后指数衰减为0（消失），如果导数>1连乘后指数增长为无穷（爆炸）。激活函数选择和权重初始化是主因。",
+      "useCase": "判断深层网络训练失败原因（Loss不下降可能是梯度消失，Loss突变NaN可能是梯度爆炸），从而选择合适的初始化(He/Xavier)和归一化(BatchNorm/LayerNorm)。",
+      "comparison": "梯度消失让浅层参数几乎不更新网络退化，梯度爆炸让参数更新过大损失震荡。ReLU+BN+LSTM/Transformer可缓解。",
+      "limitation": "即使有缓解方案，极深网络（>1000层）仍有训练难度，需要残差连接等额外结构。",
+      "interview": "梯度消失和爆炸的原因、怎么判断是哪种、如何解决、BatchNorm为什么能缓解梯度消失。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "交叉验证",
+      "category": "深度学习",
+      "definition": "将数据集切分成K份，每次用K-1份训练、1份验证，轮换K次取平均指标，来评估模型泛化能力的统计方法。",
+      "mechanism": "常用K-Fold：数据分成K等份→训练K次每次不同折做验证→K个验证分数的均值作为最终评估。Stratified K-Fold保持每折类别比例一致适合分类。",
+      "useCase": "模型超参数选择、模型之间对比评估、小数据场景下的稳定评估。",
+      "comparison": "vs 留出法(Hold-out)：交叉验证更稳定可靠但计算量K倍；K-Fold vs 留一法(LOOCV)：LOOCV几乎无偏但方差大且计算量巨大。",
+      "limitation": "训练K次计算量大、深度学习大数据集通常不用交叉验证（用固定验证集）、时间序列数据不能随意切分需用TimeSeriesSplit。",
+      "interview": "K折交叉验证的原理、K值怎么选、为什么要用分层采样、时间序列数据怎么交叉验证。",
+      "source": "基础深度学习.md"
+    },
+    {
+      "title": "MCP(模型上下文协议)",
+      "category": "MCP",
+      "definition": "由Anthropic提出的开放协议标准，让AI模型与外部工具、数据源通过统一的JSON-RPC 2.0接口通信，实现模型和工具的解耦。",
+      "mechanism": "三层架构：Host(AI应用)→MCP Client(协议客户端，负责JSON-RPC通信)→MCP Server(独立进程，提供Tools/Resources/Prompts)。Server可本地stdio或远程HTTP部署。",
+      "useCase": "AI应用集成外部工具（搜索引擎、数据库、文件系统）、企业多模型复用同一套工具生态、跨平台工具共享。",
+      "comparison": "vs Function Calling：MCP是标准化协议跨模型通用，Function Calling是各模型厂商自有格式需适配；vs 插件系统：MCP解耦更彻底Server完全独立。",
+      "limitation": "协议较新生态仍在完善、本地stdio部署跨语言IPC复杂、高并发远程Server性能待验证。",
+      "interview": "MCP协议的核心架构、和Function Calling有什么不同、Tools/Resources/Prompts分别是什么。",
+      "source": "MCP协议详解.md"
+    },
+    {
+      "title": "JSON-RPC 2.0",
+      "category": "MCP",
+      "definition": "一种轻量级远程过程调用协议，使用JSON格式编码请求和响应，是无状态的传输层无关协议，MCP基于此协议通信。",
+      "mechanism": "请求格式包含jsonrpc/method/params/id四个字段→服务端解析method找到对应方法执行→返回jsonrpc/result/id或error对象。支持单次调用和批量调用。",
+      "useCase": "MCP协议的通信基础、微服务间轻量通信、区块链节点RPC接口、需要简单协议而不需要SOAP/REST复杂语义的场景。",
+      "comparison": "vs REST：JSON-RPC方法调用导向更直观，REST资源导向；vs gRPC：JSON-RPC文本可读性好但性能不如二进制gRPC。",
+      "limitation": "无Schema定义（需额外文档描述）、无流式传输原生支持、无服务发现机制需自行实现。",
+      "interview": "JSON-RPC 2.0的请求和响应格式、和REST的区别、MCP为什么选择JSON-RPC而不是其他协议。",
+      "source": "MCP协议详解.md"
+    },
+    {
+      "title": "MCP Server与Client",
+      "category": "MCP",
+      "definition": "MCP Server是暴露工具和数据资源的独立服务端进程，MCP Client是连接Host和Server的协议中间层，两者通过JSON-RPC 2.0通信。",
+      "mechanism": "Server注册能力(列举Tools/Resources/Prompts)→Client发起initialize握手获取Server能力列表→Host调用工具时Client发送tools/call请求→Server执行并返回结果。传输层支持stdio(本地)和HTTP(远程)。",
+      "useCase": "Server封装具体能力（如PostgreSQL查询、GitHub API封装）→Client作为中间层统一管理多个Server→Host(Claude/其他AI应用)通过Client调用。",
+      "comparison": "Server是能力提供方，Client是协议通信层，Host是最终AI应用。多个Server可同时服务一个Host，Server与LLM完全解耦可独立升级。",
+      "limitation": "Server进程管理复杂（stdio模式启动/销毁生命周期）、跨语言Server开发需实现完整JSON-RPC 2.0协议栈。",
+      "interview": "MCP Server如何定义工具、Client和Server如何发现彼此的能力、stdio和HTTP传输方式各自适用场景。",
+      "source": "MCP协议详解.md"
+    },
+    {
+      "title": "Docker",
+      "category": "部署与工程化",
+      "definition": "通过容器技术将应用和依赖打包成标准化的轻量镜像，实现「一次构建、随处运行」的环境一致性部署工具。",
+      "mechanism": "Dockerfile定义环境构建步骤→docker build生成分层镜像→docker run启动隔离容器（共享宿主机内核、独立文件系统/网络/进程空间）→docker compose编排多容器服务。",
+      "useCase": "大模型推理服务容器化部署、开发环境一致性、微服务编排、CI/CD流水线、多节点GPU集群服务管理。",
+      "comparison": "vs 虚拟机：容器共享内核启动秒级、资源开销小，虚拟机隔离性好启动分钟级；vs Conda/Pip venv：Docker打包整个系统依赖不仅是Python包。",
+      "limitation": "有轻微性能损耗、GPU透传需nvidia-docker配置、镜像体积可能很大、需要学习Dockerfile语法。",
+      "interview": "Docker和虚拟机的区别、什么是镜像层和层缓存、如何给容器挂载GPU、docker-compose有什么作用。",
+      "source": "部署与工程化.md"
+    },
+    {
+      "title": "Vibe Coding",
+      "category": "部署与工程化",
+      "definition": "一种AI辅助编程新范式，开发者通过自然语言描述需求，由AI生成和管理代码，人更多做指导和审查而非逐行写代码。",
+      "mechanism": "用Cursor/Claude Code等AI编程助手，开发者用自然语言表达意图，AI生成代码并进行版本管理（Git），人通过Code Review把控质量，形成人机协作的开发流水线。",
+      "useCase": "快速原型搭建、重复性代码自动化、全栈应用开发加速、技术方案快速验证、非专业开发者的应用构建。",
+      "comparison": "vs 传统编码：Vibe Coding强调AI做实现人做决策，传统编码人手写每行；vs Copilot补全：Vibe Coding是全流程AI驱动，Copilot是逐行辅助。",
+      "limitation": "AI生成代码可能有bug需人工审查、复杂架构决策仍需人、对上下文理解有限可能偏航、需具备代码审查能力。",
+      "interview": "Vibe Coding的含义和工作流程、和传统编码的区别、如何保证AI生成代码的质量。",
+      "source": "部署与工程化.md"
+    },
+    {
+      "title": "大模型训练三阶段",
+      "category": "部署与工程化",
+      "definition": "从随机初始化到最终对齐模型的标准三阶段流程：预训练学知识→指令微调学服从→偏好对齐学三观。",
+      "mechanism": "阶段一预训练：海量文本自监督next-token预测→基座模型；阶段二SFT：高质量指令-回答对监督学习→指令跟随模型；阶段三RLHF/DPO：偏好数据对齐人类价值观→最终对齐模型。",
+      "useCase": "理解开源/闭源模型的训练流程、企业自研模型规划、微调策略制定。",
+      "comparison": "预训练成本最高（几千万美元），SFT和RLHF相对便宜。全量SFT更新全部参数，LoRA只更新少量参数；RLHF需要训练奖励模型，DPO直接优化省去奖励模型步骤。",
+      "limitation": "预训练阶段难以控制和预测涌现行为、SFT数据质量至关重要、RLHF可能导致过度迎合人类偏好降低多样性。",
+      "interview": "大模型训练三个阶段各自的目标、RHLF和DPO的区别、为什么需要三阶段而不是直接SFT。",
+      "source": "部署与工程化.md"
+    },
+    {
+      "title": "UnSloth",
+      "category": "训练框架与工具",
+      "definition": "专为大模型微调优化的开源加速库，通过重写底层CUDA Kernel和手写反向传播，实现2-5倍训练加速和大幅降低显存占用。",
+      "mechanism": "用Triton和CUDA重写LoRA/QLoRA的线性层前反向传播kernel，消除额外内存拷贝，减少中间变量，支持4bit量化训练，一条命令替换标准PEFT库。",
+      "useCase": "消费级显卡（RTX 3060/4090）微调7B-70B模型、快速实验迭代、在Colab/Notebook环境微调大模型。",
+      "comparison": "vs 标准LoRA(PEFT)：UnSloth快2-5倍且省50%+显存；vs LLaMA-Factory：UnSloth是加速引擎（底层），LLaMA-Factory是训练框架（上层），LLaMA-Factory集成了UnSloth。",
+      "limitation": "仅支持HuggingFace生态的部分模型（LLaMA/Qwen/Mistral/Gemma等）、定制化kernel升级依赖UnSloth团队。",
+      "interview": "UnSloth为什么能比标准LoRA快、底层做了哪些优化、什么时候用UnSloth什么时候用标准PEFT。",
+      "source": "训练框架与工具.md"
+    },
+    {
+      "title": "DeepSpeed",
+      "category": "训练框架与工具",
+      "definition": "微软开源的深度学习分布式训练优化库，通过ZeRO优化器将模型状态分片到多卡，使得千亿参数模型训练成为可能。",
+      "mechanism": "ZeRO分三个阶段：ZeRO-1切分优化器状态（省4x显存）→ZeRO-2切分梯度→ZeRO-3切分模型参数（几乎线性扩卡）。结合Offload把数据从GPU卸到CPU/内存进一步省显存。",
+      "useCase": "训练超大模型（百亿-千亿参数）、多机多卡分布式训练、学术机构有限GPU资源下训练大模型。",
+      "comparison": "vs FSDP(PyTorch官方)：DeepSpeed发展更早生态更成熟支持ZeRO-3更彻底；vs Megatron-LM：DeepSpeed专注优化器/显存，Megatron专注张量并行+流水线并行。",
+      "limitation": "配置复杂（ZeRO stage/offload等参数调优）、某些场景单卡微调不需要ZeRO、与部分新模型兼容性需验证。",
+      "interview": "ZeRO的三个阶段分别做了什么、DeepSpeed和FSDP有什么区别、为什么3D并行要结合DeepSpeed+NVIDIA Megatron。",
+      "source": "训练框架与工具.md"
+    },
+    {
+      "title": "LangSmith",
+      "category": "训练框架与工具",
+      "definition": "LangChain官方出品的LLM应用可观测性平台，提供链路追踪(tracing)、实验管理、数据集测试评估和线上监控能力。",
+      "mechanism": "每步LLM调用自动记录输入输出/耗时/token消耗→trace可视化展示链路→创建datasets实测评估prompt效果→线上部署后持续监控latency和token消耗。",
+      "useCase": "调试复杂Agent链路、对比不同prompt和模型的线上效果、回归测试防止模型版本更新后质量下降、线上应用异常监控。",
+      "comparison": "vs LLMOps平台（Weights & Biases）：W&B侧重模型训练跟踪，LangSmith侧重LLM应用运行时的可视化调试和评估；vs TruLens：都做评估观测，LangSmith和LangChain集成更深。",
+      "limitation": "需网络连接LangSmith服务（云端SaaS）、产线大量trace会产生费用、国内访问可能受限。",
+      "interview": "LangSmith的核心功能、为什么LLM应用需要可观测性、trace和span的区别是什么。",
+      "source": "训练框架与工具.md"
+    },
+    {
+      "title": "LLaMA-Factory",
+      "category": "训练框架与工具",
+      "definition": "集成了数十种主流LLM微调方法的一站式训练框架，提供WebUI界面，让微调大模型低代码化甚至无代码化。",
+      "mechanism": "封装LoRA/QLoRA/全量微调/P-Tuning等多方法→统一使用dataset_info.json注册数据→选择基座模型→选微调方法和参数→一键训练+评估+合并导出。底层集成UnSloth加速。",
+      "useCase": "零代码入门大模型微调、快速实验对比多种微调方法、企业批量微调部署。",
+      "comparison": "vs 手写PEFT+TRL代码：LLaMA-Factory降低90%代码量，但定制化灵活性不如手写；vs UnSloth：LLaMA-Factory是上层框架，UnSloth是底层加速引擎，两者可结合使用。",
+      "limitation": "高度封装定制化能力受限、与最新前沿方法的更新存在滞后、框架Bug排查需深入源码。",
+      "interview": "LLaMA-Factory支持哪些微调方法、dataset_info.json的作用、和手写微调代码的优劣对比。",
+      "source": "训练框架与工具.md"
+    },
+    {
+      "title": "Coze(扣子)",
+      "category": "AI应用平台",
+      "definition": "字节跳动推出的零代码AI智能体构建平台，通过可视化拖拽方式创建Bot，集成插件、工作流、知识库(RAG)、记忆等模块。",
+      "mechanism": "人设与回复逻辑定角色→Plugin插件系统（内置/自定义/MCP标准三方插件）扩能力→可视化工作流编排多步骤任务→知识库RAG增知识→记忆模块维持对话连贯→多端一键发布。",
+      "useCase": "零代码搭建客服Bot、企业知识库助手、自媒体内容创作、教育与培训AI助手。",
+      "comparison": "vs Dify：Coze更侧重零代码C端易用性+字节生态（豆包、飞书），Dify更侧重开源私有部署+API友好；vs FastGPT：Coze平台功能更广，FastGPT专注知识库RAG深度。",
+      "limitation": "深度定制受平台限制、免费版有调用次数限制、国内版和国际版功能不同。",
+      "interview": "Coze和Dify的核心区别、Coze的工作流和LangChain的Chain有何不同、如何自定义插件。",
+      "source": "AI应用平台.md"
+    },
+    {
+      "title": "Dify",
+      "category": "AI应用平台",
+      "definition": "开源LLMOps平台，支持私有化部署和模型中立（接任何LLM），通过可视化编排+API将大模型能力集成到业务应用。",
+      "mechanism": "应用编排层：可视化/API两种模式构建AI应用→编排引擎层：LangChain-like流程编排→模型网关层：统一代理多厂商多模型→运维层：日志/监控/计费/权限管理。支持模型中立架构。",
+      "useCase": "企业内部AI应用中台、私有化部署RAG知识库应用、多模型统一管理和计费、安全合规企业部署。",
+      "comparison": "vs Coze：Dify开源可私有化模型中立，Coze闭源绑字节生态；vs LangChain：Dify是完整平台不用写代码，LangChain是开发库需写代码。",
+      "limitation": "二次开发需学习Dify特定架构、重型功能和复杂Agent编排不如代码开发灵活。",
+      "interview": "Dify和Coze的区别、Dify的模型中立架构是什么、私有化部署和云端SaaS的选择考量。",
+      "source": "AI应用平台.md"
+    },
+    {
+      "title": "Claude Code",
+      "category": "AI应用平台",
+      "definition": "Anthropic推出的基于Claude模型的终端AI编程助手（CLI工具），直接在终端中通过自然语言与代码库交互完成开发任务。",
+      "mechanism": "在终端中`claude`命令启动→读取代码库上下文→自然语言描述开发需求→Claude模型规划和执行（搜索代码→理解架构→生成修改→执行命令）→迭代直到完成。支持MCP集成扩展工具能力。",
+      "useCase": "复杂代码重构、Bug定位与修复、跨文件功能开发、技术方案快速验证、Git提交与PR管理。",
+      "comparison": "vs Cursor/Copilot：Claude Code是终端CLI全流程Agent，Cursor/Copilot是IDE插件逐行辅助；vs Aider：理念相似但底层模型不同，Claude Code原生支持MCP工具扩展。",
+      "limitation": "需Claude API用量消耗、复杂项目上下文过大会降低质量、终端操作要求一定技术熟练度。",
+      "interview": "Claude Code和Cursor的区别、什么是MCP在Claude Code中的作用、Claude Code的典型工作流是怎样的。",
+      "source": "AI应用平台.md"
+    },
+    {
+      "title": "RAG（检索增强生成）",
+      "category": "RAG",
+      "definition": "将信息检索与大语言模型生成相结合的技术框架，通过外挂知识库弥补大模型知识时效性差、易产生幻觉的短板。",
+      "mechanism": "离线阶段将文档分块、向量化后存入向量数据库；在线阶段将用户问题向量化后检索Top-K相关文档，拼接至提示词中让LLM基于检索结果生成答案。",
+      "useCase": "企业知识库问答、智能客服、文档分析、合规审查等需要基于私有知识回答问题的场景。",
+      "comparison": "vs 纯LLM：RAG能引用外部最新知识减少幻觉；vs 微调：RAG无需训练、知识可实时更新，但推理延迟更高。",
+      "limitation": "检索质量决定生成质量（garbage in garbage out）、长上下文拼接增加推理成本、复杂推理问题可能检索不到足够信息。",
+      "interview": "RAG解决了大模型的哪些核心痛点、标准RAG流程分哪两个阶段、RAG和模型微调各适合什么场景。",
+      "source": "04_Navtive_RAG技术与应用.md"
+    },
+    {
+      "title": "Naive RAG（朴素RAG）",
+      "category": "RAG",
+      "definition": "最基础的RAG实现，直接「查询→检索→拼接→生成」，无任何优化策略的原始流水线。",
+      "mechanism": "用户提问直接向量化后检索Top-K文档，将所有检索结果与原始问题拼接成一个prompt，一次性输入LLM生成答案。",
+      "useCase": "RAG快速原型验证、简单FAQ问答、教学演示场景。",
+      "comparison": "vs Advanced RAG：Naive RAG缺乏检索前/中/后优化，容易引入噪声和无关文档导致答案质量下降；Naive是基线，Advanced是工业级。",
+      "limitation": "查询短导致检索不准确、无法处理复杂多跳推理、检索噪声可能误导模型、不支持多轮对话上下文。",
+      "interview": "Naive RAG的流程是什么、为什么Naive RAG不能满足生产需求、Naive RAG有哪些常见问题。",
+      "source": "04_Navtive_RAG技术与应用.md"
+    },
+    {
+      "title": "Advanced RAG（高级RAG）",
+      "category": "RAG",
+      "definition": "在Naive RAG基础上叠加检索前、检索中、检索后三层优化的工业级RAG方案。",
+      "mechanism": "检索前优化（查询重写、HyDE、子查询分解）→检索中优化（混合检索、多路召回）→检索后优化（重排序、上下文压缩、去重），共20+优化点可按需组合。",
+      "useCase": "企业级知识库系统、高精度专业问答、复杂文档分析场景。",
+      "comparison": "vs Naive RAG：Advanced RAG多三层优化，检索命中率和答案准确率显著提升；vs Modular RAG：Advanced RAG是优化策略的集合，Modular RAG强调模块化可插拔架构。",
+      "limitation": "优化链路长导致整体延迟增加、各优化策略需根据场景调优否则适得其反、系统复杂度高。",
+      "interview": "Advanced RAG三层优化分别有哪些具体技术、HyDE是什么原理、Rerank为什么能提升检索质量。",
+      "source": "05_01_Advance RAG .md"
+    },
+    {
+      "title": "混合检索（Hybrid Search）",
+      "category": "RAG",
+      "definition": "同时使用稠密向量检索（语义匹配）和稀疏关键词检索（BM25），通过融合算法合并排序结果的检索策略。",
+      "mechanism": "稠密检索用Embedding捕捉语义相似但可能漏掉精确关键词，稀疏检索用BM25精确匹配术语但不懂语义。两者互补，通过RRF（倒数排名融合）或加权融合生成最终排序。",
+      "useCase": "专业术语密集的领域（法律、医疗）、代码搜索、需要同时匹配语义和精确关键词的场景。",
+      "comparison": "vs 纯向量检索：混合检索多了关键词精确匹配能力，不会漏掉专有名词；vs 多路召回：混合检索是对同一数据源用多种算法，多路召回是对多个不同数据源分别检索。",
+      "limitation": "需要维护两套索引（向量索引+倒排索引）、存储成本翻倍、融合参数需经验调优。",
+      "interview": "混合检索和纯向量检索的区别、BM25和Embedding各有什么优势、RRF融合的原理。",
+      "source": "05_03_AdvanceRAG_检索中优化（Retrieval）.md"
+    },
+    {
+      "title": "Self-RAG（自主检索RAG）",
+      "category": "RAG",
+      "definition": "让LLM自主判断是否需要检索以及检索结果是否可用的RAG变体，通过反思机制提升生成质量。",
+      "mechanism": "对每个输入先判断是否需要检索→需要则检索→对检索结果评估相关性→相关则用于生成、不相关则跳过。核心在【按需检索+检索质量自评】，避免无意义的检索和噪声引入。",
+      "useCase": "混合场景（部分问题需检索部分不需）、多轮对话中区分何时查知识库、减少不必要的检索成本。",
+      "comparison": "vs Naive RAG：Self-RAG不是每个问题都检索，通过自省避免无意义检索和噪声引入；vs Corrective RAG：Self-RAG侧重要不要检索，CRAG侧重检索结果不对时怎么修正。",
+      "limitation": "增加额外的LLM调用次数（判断→检索→评估→生成）、判断准确率依赖LLM自身能力、增加了延迟和成本。",
+      "interview": "Self-RAG的核心思想和Naive RAG的区别、什么时候不需要检索、如何评估检索结果的相关性。",
+      "source": "05_05_01_Self-RAG .md"
+    },
+    {
+      "title": "Corrective RAG（纠错RAG）",
+      "category": "RAG",
+      "definition": "在检索后对文档质量进行评估，发现检索结果不佳时自动触发检索修正的RAG变体。",
+      "mechanism": "检索→评估检索质量→质量低则触发纠错机制（关键词提取+web搜索、查询改写+重新检索），直到获得可靠结果。本质是【检索结果质量把关+自动补救】。",
+      "useCase": "高频更新的知识场景（新闻、股票）、知识库覆盖不全的开放域问答、对答案准确性要求极高的场景。",
+      "comparison": "vs Self-RAG：CRAG关注检索结果的纠错修正，Self-RAG关注是否要检索；vs 传统RAG：CRAG多了质量评估和自动补救环节，减少垃圾文档污染答案。",
+      "limitation": "纠错机制通常依赖Web搜索等外部API增加延迟和成本、质量评估阈值难调优、可能无限循环检索。",
+      "interview": "Corrective RAG的纠错流程、和Self-RAG的区别、质量评估用哪些指标。",
+      "source": "05_05_02_CorrectiveRAG.md"
+    },
+    {
+      "title": "Modular RAG（模块化RAG）",
+      "category": "RAG",
+      "definition": "将RAG系统的各功能拆分为独立可插拔模块，支持灵活组合的架构模式。",
+      "mechanism": "每个模块有标准接口，可按需拼接：查询改写模块→多路检索器模块→融合排序模块→上下文压缩模块→生成模块。不同场景组装不同管线，实现乐高式灵活架构。",
+      "useCase": "复杂多变的RAG需求场景、需要快速迭代实验不同RAG策略、多数据源多格式的混合知识库。",
+      "comparison": "vs Advanced RAG：Advanced RAG是固定优化流水线，Modular RAG是乐高式灵活架构；Modular RAG可以自由组合出各种Advanced RAG策略。",
+      "limitation": "模块接口标准化困难、模块间数据传递格式需统一设计、过度模块化可能带来性能开销。",
+      "interview": "Modular RAG的架构思想和传统RAG的区别、模块化设计有什么好处、如何设计模块间接口。",
+      "source": "06_Modular RAG：模块化检索增强生成 .md"
+    },
+    {
+      "title": "Graph RAG（图检索增强生成）",
+      "category": "RAG",
+      "definition": "用知识图谱替代或补充向量检索的RAG方案，通过实体-关系-实体的图结构进行多跳推理检索。",
+      "mechanism": "将文档中的实体和关系提取构建为知识图谱，查询时遍历图结构找到相关实体及其关联信息，再拼接给LLM生成答案。代表实现：Microsoft GraphRAG，擅长回答全局总结性问题和多跳关联推理。",
+      "useCase": "复杂关联推理（如药物通过什么通路影响疾病）、社交网络分析、供应链追溯、多跳问答。",
+      "comparison": "vs 向量RAG：Graph RAG擅长实体间关系推理，向量RAG擅长语义相似匹配；Graph RAG可回答全局总结性问题，向量RAG擅长找到最相关的几段话。",
+      "limitation": "知识图谱构建成本高（实体抽取+关系抽取）、对非结构化自由文本不友好、图遍历计算开销大于向量检索。",
+      "interview": "Graph RAG和向量RAG的本质区别、什么场景适合用Graph RAG、Microsoft GraphRAG的核心流程。",
+      "source": "08_02_Microsoft GraphRag的使用步骤（了解）.md"
+    },
+    {
+      "title": "文档分块（Chunking）",
+      "category": "RAG",
+      "definition": "将长文档按某种策略切分为适合向量化和检索的小块(chunk)的技术，是RAG系统的基础预处理步骤。",
+      "mechanism": "常用策略：固定大小分块（按token数等分）、递归分块（按段落→句子递进切分）、语义分块（按语义边界切分）。需平衡块大小：太大语义完整但检索不准，太小语义碎片化。配合重叠(overlap)保留上下文连续性。",
+      "useCase": "RAG知识库构建第一步、长文档向量化预处理、所有需要将文档转为向量进行检索的场景。",
+      "comparison": "vs 整文档处理：分块让检索可以定位到具体段落而非返回整个文档；不同分块策略（固定vs递归vs语义）直接影响RAG最终效果。",
+      "limitation": "固定大小可能在句子中间切断、分块粒度选择困难、跨块信息丢失、分块后需要额外上下文拼接策略。",
+      "interview": "文档分块有哪些常用策略、块大小如何选择、overlap的作用是什么、分块策略对RAG效果的影响。",
+      "source": "05_02_AdvanceRAG_检索前优化（Pre-retrieval） .md"
+    },
+    {
+      "title": "Agent（智能体）",
+      "category": "Agent",
+      "definition": "以大模型为【大脑】，具备感知环境、自主规划、调用工具、执行行动能力的AI应用形态。",
+      "mechanism": "核心循环：感知（接收输入+观察环境）→规划（LLM推理分析分解任务）→执行（调用工具/API）→观察（获取工具返回结果）→反思迭代直到任务完成。",
+      "useCase": "自动化办公、智能客服、代码生成助手、数据分析、多步骤复杂任务编排。",
+      "comparison": "vs 纯LLM：Agent能调用外部工具和API与真实世界交互，LLM只能生成文本；vs RAG：Agent能自主决策做什么，RAG固定检索+生成的流水线。",
+      "limitation": "自主决策可能出错的不可控性、多步调用成本高耗时长、工具调用安全风险（如误操作删数据）、复杂任务可能无法收敛。",
+      "interview": "Agent和普通大模型对话的区别是什么、Agent的核心能力有哪些、Agent的安全性如何保障。",
+      "source": "01_智能体介绍 副本.md"
+    },
+    {
+      "title": "ReAct架构",
+      "category": "Agent",
+      "definition": "将推理(Reasoning)和行动(Acting)交替进行的Agent架构，通过思考→行动→观察循环实现多步骤任务解决。",
+      "mechanism": "用户提问→Thought(分析现在需要做什么)→Action(执行工具调用)→Observation(观察工具返回结果)→Thought(下一步)→...循环交替直至任务完成或达到最大步数。",
+      "useCase": "需要多步工具调用的问答、信息检索+推理、数据分析、Web自动化。",
+      "comparison": "vs Single Agent：ReAct多轮循环多步推理，Single Agent一步完成；vs Plan-and-Execute：ReAct边想边做动态调整，Plan-and-Execute先全局规划再执行。",
+      "limitation": "循环次数不可控可能陷入死循环、中间步骤错误的影响会累积、工具调用较多时Token消耗高。",
+      "interview": "ReAct的Thought-Action-Observation循环、和Plan-and-Execute的区别、为什么要交替推理和行动。",
+      "source": "02_ReAct 架构（Reason+Act 推理行动循环）  .md"
+    },
+    {
+      "title": "Graph工作流架构",
+      "category": "Agent",
+      "definition": "将Agent任务编排为有向图（节点=处理单元，边=执行流向），支持分支、并行、循环的企业级Agent架构。",
+      "mechanism": "节点可以是LLM调用、工具执行、条件判断等，边定义执行顺序和分支条件。支持循环(cycles)实现迭代优化，支持并行执行多个独立子任务。代表框架：LangGraph。",
+      "useCase": "企业级复杂Agent系统、多步骤条件分支任务、需要可视化流程管理的场景。",
+      "comparison": "vs ReAct：Graph预定义所有可能路径结构清晰，ReAct自由循环更灵活但不可预测；vs Plan-and-Execute：Graph流程固定可维护性好，Plan-and-Execute动态规划更灵活。",
+      "limitation": "流程需提前设计灵活性不如自由循环、图结构复杂时维护成本高、需要学习图编程范式。",
+      "interview": "Graph工作流架构和ReAct的区别、LangGraph的核心概念（Node/Edge/State/Checkpoint）、什么场景适合用Graph架构。",
+      "source": "07_Graph_Workflow 架构（有向图工作流，企业级主流） .md"
+    },
+    {
+      "title": "DeepAgent（深度智能体）",
+      "category": "Agent",
+      "definition": "具备深度规划、长程记忆和复杂工具编排能力的高级Agent系统，能处理需要数十上百步的复杂任务。",
+      "mechanism": "融合层次化任务分解、长期记忆管理、工具库组织优化和反思纠错机制。将复杂任务递归分解为子任务树，逐步执行并持续调整计划。代表：OpenAI Deep Research。",
+      "useCase": "深度研究报告生成、复杂代码库重构、多文件多轮编辑、长时间自主任务执行。",
+      "comparison": "vs 普通Agent：DeepAgent任务分解更深（层层递归）、记忆管理更持久、支持百步级长任务；vs ReAct Agent：DeepAgent多了层次化规划和长程记忆，ReAct偏短期单层循环。",
+      "limitation": "计算成本极高（一次任务可能消耗大量token）、长程任务的中间状态管理困难、容易在子任务中迷失方向。",
+      "interview": "DeepAgent和普通Agent的根本区别、DeepAgent如何管理长程记忆、什么是层次化任务分解。",
+      "source": "09_DeepAgent .md"
+    },
+    {
+      "title": "工具调用（Function Calling）",
+      "category": "Agent",
+      "definition": "大模型通过结构化输出指定要调用的函数名和参数，由外部程序执行后返回结果给模型的交互机制。",
+      "mechanism": "定义工具的JSON Schema（函数名、描述、参数类型）→模型推理时输出函数调用请求(含函数名+参数值)→程序执行函数→结果以Tool角色消息回传模型→模型继续推理或生成最终答案。",
+      "useCase": "调用外部API（搜索/天气/数据库查询）、代码执行、文件操作、所有需要模型与外部系统交互的场景。",
+      "comparison": "vs 文本输出：Function Calling输出是结构化JSON而非自由文本，确保程序可解析；不同模型实现有差异（OpenAI原生FC vs 通用prompt-based FC）。",
+      "limitation": "模型可能调用错误的函数或传递错误参数、并行调用时参数依赖关系需要手动维护、函数定义过多时模型选择能力下降。",
+      "interview": "Function Calling的工作原理、如何使用JSON Schema定义工具、并行函数调用怎么实现。",
+      "source": "08_02_核心组件_架构_Agent.md"
+    },
+    {
+      "title": "Plan-and-Execute架构",
+      "category": "Agent",
+      "definition": "将规划和执行分离的Agent架构，先制定完整计划再逐步执行，每一步可观察前一步结果动态调整。",
+      "mechanism": "规划器(Planner)将用户复杂任务分解为有序步骤列表→执行器(Executor)逐个执行每个步骤→每步执行结果反馈给规划器，必要时重规划剩余步骤。职责分明：规划器负责【做什么】，执行器负责【怎么做】。",
+      "useCase": "长序列任务（分析报告生成、多文件代码开发）、任务步骤间有依赖关系的场景。",
+      "comparison": "vs ReAct：Plan-and-Execute先全局规划再逐步执行，ReAct边想边做无全局计划；vs Multi-Agent：Plan-and-Execute是两个角色（规划+执行），Multi-Agent是多个自主Agent协作。",
+      "limitation": "初始计划可能不准确导致后续步骤白费、规划器对任务理解不足时输出低质量计划、重规划开销大。",
+      "interview": "Plan-and-Execute和ReAct的根本区别、规划器和执行器各自职责、什么场景适合用Plan-and-Execute。",
+      "source": "03_Plan&Execute 架构（规划 - 执行分离） .md"
+    },
+    {
+      "title": "多智能体协作（Multi-Agent）",
+      "category": "Agent",
+      "definition": "多个具备不同角色和能力的Agent协同完成复杂任务的架构，通过角色分工、消息传递和任务协调实现1+1>2的效果。",
+      "mechanism": "每个Agent有独立角色定义和工具集，通过标准化的消息格式相互通信。协作模式包括：流水线串行、辩论并行、层级调度。代表框架：CrewAI（角色化协作）、AutoGen（对话驱动）。",
+      "useCase": "软件工程（分析师→程序员→测试员协作）、多角色内容创作、需要不同领域专家协同的复杂项目。",
+      "comparison": "vs Single Agent：Multi-Agent多角色分工各司其职，Single Agent一人扛所有；vs Router+Skill：Multi-Agent是多个智能体协作，Router+Skill是一个Agent路由到不同技能模块。",
+      "limitation": "Agent间通信协议设计复杂、多Agent协调开销大、可能出现Agent间冲突或死锁、调试和可观测性差。",
+      "interview": "Multi-Agent的优势和挑战、CrewAI和AutoGen的实现差异、如何处理Agent间通信和冲突。",
+      "source": "05_Multi_Agent架构 .md"
+    },
+    {
+      "title": "Router+Skill架构",
+      "category": "Agent",
+      "definition": "通过路由模块（Router）将用户请求分发到对应的专业技能模块（Skill）的分科式Agent架构。",
+      "mechanism": "Router分析用户意图→匹配到最合适的Skill→该Skill内部的Agent或LLM处理请求→返回结果。每个Skill是相对独立的专业能力模块（如翻译Skill、搜索Skill、数据分析Skill）。",
+      "useCase": "多领域服务平台（一个入口处理多种类型问题）、企业内部多部门AI助手、需区分不同任务类型的统一Agent入口。",
+      "comparison": "vs Multi-Agent：Router+Skill是【一个路由+多个工具人】，Multi-Agent是【多个自主Agent互相聊天协作】；vs Single Agent：Router+Skill多了意图分诊和技能分流。",
+      "limitation": "Router误判导致分诊错误、Skill边界模糊时难以归类、新增Skill需要更新Router的意图识别范围。",
+      "interview": "Router+Skill架构的核心思想、Router如何做意图识别和分流、和Multi-Agent架构的区别。",
+      "source": "04_Router+Skill 架构（路由 + 技能插件）  .md"
+    },
+    {
+      "title": "Blackboard架构（黑板系统）",
+      "category": "Agent",
+      "definition": "多个专家Agent共享一个中央【黑板】（共享知识库/状态空间），各专家轮流从黑板读取信息并贡献新知，协作求解复杂问题的架构。",
+      "mechanism": "中央黑板维护问题的当前状态和已知信息→各专家Agent监视黑板变化→当发现可以贡献的领域知识时自动写入黑板→控制模块协调专家调度→反复迭代直到黑板上的解满足条件。",
+      "useCase": "多学科会诊（医疗多专家诊断）、法律案件分析（多方意见汇总）、需要多领域知识融合的复杂推理场景。",
+      "comparison": "vs Multi-Agent流水线：Blackboard是共享空间式协作，Multi-Agent是消息传递式协作；vs Graph架构：Blackboard灵活自由但顺序不可控，Graph预定义流程更可控。",
+      "limitation": "专家调度策略设计困难（谁先发言）、黑板数据一致性维护复杂、缺乏标准化框架支持（LangChain/LangGraph无原生Blackboard模式）。",
+      "interview": "Blackboard架构的核心思想、和Multi-Agent消息传递协作的区别、什么场景适合黑板模式。",
+      "source": "06_Blackboard 架构（黑板系统，共享状态驱动）  .md"
+    },
+    {
+      "title": "LangChain核心组件",
+      "category": "Agent",
+      "definition": "LangChain框架的六大核心模块（Model I/O、Retrieval、Chains、Memory、Agents、Callbacks），覆盖大模型应用开发全流程。",
+      "mechanism": "Model I/O封装模型调用和输出解析、Retrieval提供文档加载检索全链路、Chains用LCEL声明式串联组件、Memory管理对话上下文、Agents封装工具调用和推理决策、Callbacks提供日志和流式处理钩子。",
+      "useCase": "快速搭建大模型应用原型、统一不同模型API的调用方式、构建复杂Agent和RAG系统。",
+      "comparison": "vs LlamaIndex：LangChain是通用应用框架，LlamaIndex专注数据和检索；vs 直接调用API：LangChain提供了链式编排、记忆管理、工具调用等开箱即用能力。",
+      "limitation": "版本迭代快API不稳定、抽象层多增加调试难度、过度封装让新手不理解底层原理。",
+      "interview": "LangChain六大核心组件分别是什么、为什么需要LangChain框架、LCEL链式语法有什么优势。",
+      "source": "04_LangChain的核心组件 副本.md"
+    },
+    {
+      "title": "LCEL（LangChain表达式语言）",
+      "category": "Agent",
+      "definition": "LangChain的声明式链编排语法，使用管道符(|)串联可运行组件，自动处理流式输出、异步执行、并行优化和中间结果追踪。",
+      "mechanism": "chain = prompt | llm | output_parser，管道符自动传递数据流。LCEL自动为每个组件添加流式(stream)、批处理(batch)、异步(async)等能力。所有链自动获得Runnable接口的完整能力。",
+      "useCase": "构建可串流的大模型应用、复杂多步链的声明式定义、需要自动并行优化的场景。",
+      "comparison": "vs LLMChain（旧式）：LCEL声明式、自动流式、自动并行，LLMChain继承式、需手动配置；vs LangGraph：LCEL适合线性链和简单分支，LangGraph适合复杂图工作流。",
+      "limitation": "学习曲线（理解Runnable接口和管道概念）、复杂条件分支场景不如Graph直观、调试链中间数据需要额外工具。",
+      "interview": "LCEL和旧式LLMChain的区别、管道符(|)的工作原理、LCEL为什么能自动支持流式输出。",
+      "source": "08_01_核心组件_架构_Chain_LCEL 副本.md"
+    },
+    {
+      "title": "Single Agent架构",
+      "category": "Agent",
+      "definition": "一个LLM+一套工具的最简Agent架构，单次推理后直接调用工具并返回结果，无循环无多步规划。",
+      "mechanism": "用户输入→LLM推理输出工具调用请求→执行工具→工具结果拼入对话→LLM生成最终答案。只有一轮工具调用，无反复迭代。",
+      "useCase": "简单单步任务（查天气、搜索信息、翻译）、快速原型验证、对延迟要求高但任务不复杂的场景。",
+      "comparison": "vs ReAct：Single Agent一锤子买卖无循环，ReAct多步循环迭代；vs Multi-Agent：Single Agent只有一个模型+工具，Multi-Agent多角色分工。",
+      "limitation": "无法处理需要多步推理的复杂任务、没有自我检查和纠错能力、工具调用失败时缺乏重试机制。",
+      "interview": "Single Agent的适用场景和局限、为什么需要更复杂的Agent架构、Single Agent和传统API调用的区别。",
+      "source": "01_单 Agent 架构（Single Agent） .md"
+    }
+  ],
+  "flowcharts": [
+    {
+      "title": "RAG完整流程（两大阶段）",
+      "description": "RAG系统分为离线预处理和在线推理两大阶段，涵盖从文档到答案的完整链路。",
+      "mermaid": "graph TD\n    subgraph 离线阶段[离线预处理阶段]\n        A[原始文档] --> B[文档清洗与分块]\n        B --> C[向量化 Embedding]\n        C --> D[存入向量数据库]\n    end\n    subgraph 在线阶段[在线问答阶段]\n        E[用户输入问题] --> F[问题向量化]\n        F --> G[向量数据库语义检索]\n        D -.-> G\n        G --> H[检索结果 Top-K]\n        H --> I[拼接提示词 Prompt]\n        I --> J[大模型生成答案]\n        J --> K[返回最终答案]\n    end",
+      "category": "RAG"
+    },
+    {
+      "title": "大模型训练完整链路",
+      "description": "从随机初始化到可用产品的三大训练阶段。",
+      "mermaid": "graph LR\n    subgraph 第一阶段[第一阶段：预训练]\n        A[海量未标注文本] --> B[预训练 Pretraining]\n        B --> C[基座模型 Base Model]\n    end\n    subgraph 第二阶段[第二阶段：指令微调 SFT]\n        C --> D[指令-回答配对数据]\n        D --> E[指令微调 SFT]\n        E --> F[指令跟随模型]\n    end\n    subgraph 第三阶段[第三阶段：偏好对齐 RLHF]\n        F --> G[人类偏好标注数据]\n        G --> H[训练奖励模型]\n        H --> I[PPO/DPO 强化学习]\n        I --> J[最终对齐模型]\n    end",
+      "category": "大模型微调"
+    },
+    {
+      "title": "Agent感知-决策-执行闭环",
+      "description": "智能体的核心工作流程：从用户输入到最终输出的完整循环。",
+      "mermaid": "graph TD\n    A[用户输入 文本或语音或图像] --> B[感知引擎 意图识别与理解]\n    B --> C[决策大脑 LLM推理分析]\n    C --> D{是否需要调用工具?}\n    D -- 是 --> E[工具选择策略]\n    E --> F[调用外部工具或API]\n    F --> G[获取工具执行结果]\n    G --> H[观察结果 反馈分析]\n    H --> C\n    D -- 否 --> I[直接生成回答]\n    I --> J[输出最终答案]",
+      "category": "Agent"
+    },
+    {
+      "title": "ReAct架构循环决策流程",
+      "description": "Thought思考 → Action行动 → Observation观察的递归决策过程。",
+      "mermaid": "graph TD\n    A[用户提出问题] --> B[Thought 分析当前情况]\n    B --> C{需要调用工具?}\n    C -- 需要 --> D[选择合适工具]\n    D --> E[Action 执行工具调用]\n    E --> F[Observation 观察返回结果]\n    F --> G{任务是否完成?}\n    G -- 未完成 --> B\n    G -- 已完成 --> H[汇总所有结果]\n    C -- 不需要 --> H\n    H --> I[生成最终答案返回用户]",
+      "category": "Agent"
+    },
+    {
+      "title": "MCP调用流程（三层架构）",
+      "description": "MCP协议的Host-Client-Server三层架构和调用流程。",
+      "mermaid": "graph LR\n    A[Host 宿主程序] --> B[用户输入问题]\n    B --> C[MCP Client 协议客户端]\n    C --> D[生成JSON-RPC标准请求]\n    D --> E[MCP Server 资源服务端]\n    E --> F[查找并执行对应Tool]\n    F --> G[返回JSON-RPC标准响应]\n    G --> C\n    C --> H[解析结果给Host]\n    H --> I[Host汇总生成最终答案]\n    subgraph 服务端独立部署\n        E\n        F\n    end\n    subgraph 工具与模型完全解耦\n        C\n        D\n        H\n    end",
+      "category": "MCP"
+    },
+    {
+      "title": "Advanced RAG四层优化架构（20个优化点）",
+      "description": "从检索前到进阶高级的四层RAG优化技术体系，共覆盖20个优化点。",
+      "mermaid": "graph TD\n    subgraph 检索前优化[检索前优化]\n        A[查询改写] --> B[查询扩展]\n        B --> C[HyDE假设文档]\n        C --> D[子查询分解]\n        D --> E[文档分块优化]\n    end\n    subgraph 检索中优化[检索中优化]\n        F[混合检索] --> G[多路召回]\n        G --> H[多向量表示]\n    end\n    subgraph 检索后优化[检索后优化]\n        I[重排序] --> J[上下文压缩]\n        J --> K[去重过滤]\n    end\n    subgraph 其他优化[其他优化技术]\n        L[Self-RAG自主检索] --> M[Corrective RAG纠错]\n        M --> N[迭代检索]\n    end\n    E --> F\n    H --> I\n    K --> L",
+      "category": "RAG"
+    },
+    {
+      "title": "Self-RAG与Corrective RAG对比流程",
+      "description": "Self-RAG侧重要不要检索的判断，CRAG侧重检索结果对不对的校验。",
+      "mermaid": "graph TD\n    A[用户问题] --> B[Self-RAG: 按需检索]\n    B --> C{需要检索?}\n    C -->|是| D[检索相关文档]\n    C -->|否| E[直接生成]\n    D --> F[评估检索质量]\n    F --> G{质量过关?}\n    G -->|是| H[基于文档生成]\n    G -->|否| I[Corrective RAG: 修正检索]\n    I --> D",
+      "category": "RAG"
+    },
+    {
+      "title": "混合检索与多路召回区别对比",
+      "description": "混合检索是对同一数据源用多种算法，多路召回是对多个数据源各自检索，两者可嵌套使用。",
+      "mermaid": "graph TD\n    A[用户查询] --> B{选择检索策略}\n    B --> C[混合检索 Hybrid Search]\n    B --> D[多路召回 Multi-Channel]\n    C --> C1[同一数据源]\n    C1 --> C2[稠密向量检索 语义匹配]\n    C1 --> C3[稀疏关键词检索 BM25]\n    C2 --> C4[RRF融合排序]\n    C3 --> C4\n    C4 --> E[最终检索结果]\n    D --> D1[数据源1: 技术文档]\n    D --> D2[数据源2: FAQ库]\n    D --> D3[数据源3: 社区讨论]\n    D1 --> D4[去重加加权融合]\n    D2 --> D4\n    D3 --> D4\n    D4 --> E",
+      "category": "RAG"
+    },
+    {
+      "title": "机器学习完整流程",
+      "description": "从数据收集到模型部署的标准机器学习六步流程",
+      "mermaid": "graph TD\n  A[数据收集] --> B[数据预处理<br>清洗/去重/标准化/缺失值填充]\n  B --> C[特征工程<br>特征提取/特征选择/降维]\n  C --> D[模型训练<br>选择算法/拟合参数/最小化损失]\n  D --> E[模型评估<br>准确率/F1/MSE/交叉验证]\n  E --> F{评估通过?}\n  F -->|是| G[部署与优化<br>Flask/FastAPI/监控/再训练]\n  F -->|否| C\n  G --> H[线上推理服务]",
+      "category": "传统机器学习"
+    },
+    {
+      "title": "深度学习训练流程",
+      "description": "神经网络从数据输入到参数更新的完整训练循环",
+      "mermaid": "graph LR\n  A[输入数据<br>图片/文本/序列] --> B[前向传播<br>逐层加权求和+激活函数]\n  B --> C[得到预测值]\n  C --> D[损失函数<br>计算预测与真实的差距<br>MSE/交叉熵]\n  D --> E[反向传播<br>链式求导逐层回传梯度]\n  E --> F[梯度下降<br>更新权重w和偏置b]\n  F --> G{损失收敛?}\n  G -->|否| B\n  G -->|是| H[模型训练完成<br>保存权重文件]",
+      "category": "深度学习"
+    },
+    {
+      "title": "CNN图像处理流程",
+      "description": "卷积神经网络从原始图像到分类输出的完整前向传播链路",
+      "mermaid": "graph LR\n  A[输入图像<br>28x28或224x224] --> B[卷积层Conv<br>卷积核滑动提取<br>边缘/纹理/轮廓]\n  B --> C[ReLU激活层<br>引入非线性]\n  C --> D[池化层Pool<br>压缩尺寸/保留核心特征]\n  D --> E{是否继续堆叠?}\n  E -->|是| B\n  E -->|否| F[Flatten展平层<br>二维特征图转一维向量]\n  F --> G[全连接层FC<br>特征融合+分类]\n  G --> H[Softmax输出<br>各类别概率]",
+      "category": "深度学习"
+    },
+    {
+      "title": "大模型微调完整流程",
+      "description": "从基座模型选择到模型部署的大模型微调标准三阶段流程",
+      "mermaid": "graph TD\n  A[步骤一：选择基座模型<br>Qwen/Llama/DeepSeek] --> B[步骤二：准备高质量微调数据<br>Alpaca/ShareGPT格式]\n  B --> C[注册数据到dataset_info.json]\n  C --> D[步骤三：选择微调方法]\n  D --> E{算力是否充足?}\n  E -->|充足| F[全量微调Full FT<br>更新全部参数]\n  E -->|有限| G[LoRA微调<br>仅训练低秩矩阵]\n  E -->|极少| H[QLoRA微调<br>4bit量化+LoRA]\n  F --> I[模型评估<br>验证集Loss/准确率]\n  G --> I\n  H --> I\n  I --> J{效果达标?}\n  J -->|否| B\n  J -->|是| K[合并导出模型]\n  K --> L[部署上线<br>vLLM/Ollama/Docker]",
+      "category": "微调"
+    },
+    {
+      "title": "知识蒸馏流程",
+      "description": "离线黑盒蒸馏标准流程：教师模型造数据到学生模型微调",
+      "mermaid": "graph LR\n    subgraph Teacher阶段[教师模型]\n        A[大规模教师模型] --> B[生成软标签]\n    end\n    subgraph Student阶段[学生模型]\n        C[小规模学生模型] --> D[学习软标签+硬标签]\n    end\n    B --> D\n    D --> E[蒸馏后的轻量模型]\n    E --> F[部署上线]",
+      "category": "微调"
+    },
+    {
+      "title": "NLP技术演进路线",
+      "description": "自然语言处理从规则方法到大语言模型的五代技术演进",
+      "mermaid": "graph LR\n    subgraph 传统时代[传统NLP时代]\n        A[第一代: 规则系统] --> B[第二代: 统计机器学习]\n    end\n    subgraph 深度学习时代[深度学习时代]\n        B --> C[第三代: RNN/LSTM]\n        C --> D[第四代: Seq2Seq+Attention]\n    end\n    subgraph 大模型时代[大模型时代]\n        D --> E[第五代: Transformer]\n        E --> F[GPT/BERT/LLaMA]\n    end",
+      "category": "深度学习"
+    },
+    {
+      "title": "模型压缩部署全链路",
+      "description": "从预训练到最终部署的模型压缩优化全流程",
+      "mermaid": "graph LR\n    subgraph 压缩阶段[模型压缩]\n        A[原始大模型] --> B[量化 Quantization]\n        A --> C[蒸馏 Distillation]\n        A --> D[剪枝 Pruning]\n    end\n    subgraph 部署阶段[部署方案]\n        B --> E[vLLM高并发推理]\n        C --> F[Ollama本地部署]\n        D --> G[Docker容器化]\n    end\n    subgraph 终端[终端应用]\n        E --> H[云端API服务]\n        F --> I[个人电脑/边缘设备]\n        G --> J[企业私有化部署]\n    end",
+      "category": "微调"
+    },
+    {
+      "title": "LangChain构建Agent完整流程",
+      "description": "使用LangChain开发Agent的标准步骤",
+      "category": "Agent",
+      "mermaid": "graph LR\n    subgraph 准备阶段[准备阶段]\n        A[定义工具 Tools] --> B[编写System Prompt]\n        B --> C[选择LLM模型]\n    end\n    subgraph 构建阶段[构建阶段]\n        C --> D[创建Agent]\n        D --> E[创建AgentExecutor]\n        E --> F[设置Memory记忆]\n    end\n    subgraph 运行阶段[运行阶段]\n        F --> G[用户输入invoke]\n        G --> H{需要调用工具?}\n        H -->|是| I[执行工具调用]\n        I --> J[观察工具返回结果]\n        J --> H\n        H -->|否| K[生成最终答案]\n    end"
+    },
+    {
+      "title": "Prompt Engineering方法决策流程",
+      "description": "根据不同任务类型选择最合适的提示方法",
+      "category": "提示工程",
+      "mermaid": "graph TD\n    A[任务分析] --> B{任务类型?}\n    B -->|简单问答| C[Zero-Shot]\n    B -->|需要特定格式| D[Few-Shot]\n    B -->|数学推理| E[CoT思维链]\n    B -->|复杂多步| F[Tree-of-Thoughts]\n    B -->|需要精确答案| G[Self-Consistency]\n    C --> H[直接指令]\n    D --> I[给2-3个范例]\n    E --> J[加逐步推理]\n    F --> K[多路径探索评估]\n    G --> L[多次采样投票]\n    H --> M[输出答案]\n    I --> M\n    J --> M\n    K --> M\n    L --> M"
+    },
+    {
+      "title": "多智能体协作完整流程",
+      "description": "CrewAI/AutoGen多Agent系统的工作流程",
+      "category": "Agent",
+      "mermaid": "graph TD\n    subgraph 任务定义[任务定义]\n        A[用户提出复杂任务] --> B[任务分解与分配]\n    end\n    subgraph Agent协作[Agent协作执行]\n        B --> C[Agent 1: 分析师]\n        B --> D[Agent 2: 程序员]\n        B --> E[Agent 3: 测试员]\n        C --> F[分析报告]\n        F --> D\n        D --> G[生成代码]\n        G --> E\n        E --> H{测试通过?}\n        H -->|否| I[反馈修改意见]\n        I --> D\n        H -->|是| J[输出最终结果]\n    end\n    subgraph 质量保障[质量保障]\n        J --> K[Agent交叉验证]\n        K --> L[汇总合并输出]\n    end"
+    },
+    {
+      "title": "Docker部署大模型应用流程",
+      "description": "使用Docker容器化部署大模型推理服务的标准步骤",
+      "category": "部署与工程化",
+      "mermaid": "graph LR\n    subgraph 构建阶段[构建阶段]\n        A[编写Dockerfile] --> B[选择基础镜像]\n        B --> C[安装依赖 pip install]\n        C --> D[复制模型文件]\n        D --> E[docker build 构建镜像]\n    end\n    subgraph 部署阶段[部署阶段]\n        E --> F[docker run 启动容器]\n        F --> G[挂载模型Volume]\n        G --> H[映射服务端口]\n    end\n    subgraph 运维阶段[运维阶段]\n        H --> I[健康检查 Health Check]\n        I --> J[日志监控 Log Monitor]\n        J --> K[docker compose 多服务编排]\n    end"
+    }
+  ],
+  "mindmaps": [
+    {
+      "title": "RAG五大范式分类",
+      "description": "RAG技术的五种经典范式或演进阶段，从朴素到智能体。",
+      "markmap": "RAG五大范式\n  朴素RAG Naive RAG\n    查询到检索到生成\n    直接向量检索无优化\n    容易引入噪声和幻觉\n  高级RAG Advanced RAG\n    检索前优化\n      查询重写\n      查询扩展\n      HyDE假设文档\n      子查询分解\n      文档分块优化\n    检索中优化\n      混合检索\n      多路召回\n      多向量表示\n    检索后优化\n      重排序\n      上下文压缩\n      去重过滤\n  模块化RAG Modular RAG\n    可插拔独立模块\n    灵活组合配置\n    查询改写模块\n    多路检索器\n    融合排序器\n    上下文压缩器\n  图RAG Graph RAG\n    知识图谱替代向量检索\n    实体关系实体图结构\n    图遍历多跳推理\n    擅长复杂关联问题\n    代表: Microsoft GraphRAG\n  智能体RAG Agentic RAG\n    RAG加Agent能力\n    自主规划检索策略\n    工具调用搜索引擎等\n    反思迭代修正\n    接近会思考的研究助理",
+      "category": "RAG"
+    },
+    {
+      "title": "Agent七大架构分类",
+      "description": "从简单到复杂的AI Agent架构演进全地图。",
+      "markmap": "Agent七大架构\n  单Agent架构 Single Agent\n    一个模型加一套工具\n    只思考一轮调用一次\n    结构最简单开发成本最低\n    无循环无记忆无多步骤\n  ReAct架构\n    推理思考加执行行动循环\n    Thought到Action到Observation\n    自动任务拆解分步执行\n    有记忆支持多轮对话\n  规划执行架构 Plan and Execute\n    先拆任务定计划\n    规划器与执行器分离\n    适合长任务分步做事\n  路由技能架构 Router加Skill\n    路由负责分诊\n    技能负责专精\n    多领域分科处理\n  多智能体架构 Multi-Agent\n    多角色组队协作\n    分工迭代共同完成\n    适合多人设共创\n  黑板架构 Blackboard\n    一块黑板共享知识\n    多位专家轮流贡献\n    多专家会诊场景\n  图工作流架构 Graph Workflow\n    节点模块化流程可视化\n    分支循环并行全支持\n    企业级万能架构",
+      "category": "Agent"
+    },
+    {
+      "title": "大模型微调方法分类",
+      "description": "从全参数微调到参数高效微调的方法体系。",
+      "markmap": "大模型微调方法\n  全参数微调 Full Fine-tuning\n    更新模型全部参数\n    适应性强上限高\n    显存消耗大需多卡\n    适合深度定制场景\n  参数高效微调 PEFT\n    LoRA 低秩适配\n      冻结原始权重\n      插入低秩矩阵A和B\n      秩r通常取8-64\n      可训练参数减少99%\n      推理时合并零延迟\n    QLoRA 量化LoRA\n      基座模型4bit量化\n      LoRA层16bit训练\n      单卡24GB微调65B模型\n    Prefix Tuning\n      输入前添加可训练前缀向量\n    Adapter\n      层间插入小型全连接网络\n    Prompt Tuning\n      优化输入嵌入层的软提示\n  按数据角度分类\n    领域微调 Domain Adaptation\n      增强领域知识密度\n      法律医疗金融等专业领域\n    任务微调 Task-specific\n      优化特定任务指标\n      文档问答信息抽取摘要",
+      "category": "大模型微调"
+    },
+    {
+      "title": "MCP协议核心架构",
+      "description": "MCP协议的角色、资源和传输方式架构。",
+      "markmap": "MCP模型上下文协议\n  三大核心角色\n    Host 宿主\n      AI应用本体\n      调用大模型的一方\n    MCP Client 协议客户端\n      标准化通信\n      固定格式请求\n    MCP Server 资源服务端\n      存放工具和资源\n      独立运行完全解耦\n  三大资源类型\n    Tools 工具\n      模型可主动执行的函数\n      计算查询操作\n    Resources 资源\n      模型可读取的静态内容\n      文件知识库配置\n    Prompts 提示模板\n      可复用的标准化提示词\n      统一业务交互规范\n  传输方式\n    stdio 本地传输\n      本地跨进程通信\n    TCP或HTTP 远程传输\n      跨设备远程调用\n      streamable-http支持\n  通信协议\n    JSON-RPC 2.0\n    请求和响应标准化\n    跨模型通用\n  高级特性\n    结构化内容处理\n    资源加载与模板\n    工具拦截器\n    反向调用客户端LLM",
+      "category": "MCP"
+    },
+    {
+      "title": "Coze平台核心功能",
+      "description": "Coze扣子平台的智能体构建功能体系。",
+      "markmap": "Coze智能体平台\n  人设与回复逻辑\n    角色身份定义\n    性格特质设定\n    背景设定增强\n    知识边界约束\n    回复流程规范\n  技能插件系统\n    内置插件\n      新闻阅读\n      图像生成\n      网页搜索\n    自定义插件\n      云端插件 基于OpenAPI\n      端插件 本地SDK开发\n      MCP插件 标准化协议\n    基于已有服务创建\n      FastAPI加内网穿透\n  工作流编排\n    节点Node加连线Edge加变量\n    LLM节点\n    条件分支节点\n    代码执行节点\n    多步骤复杂任务自动化\n  知识库 RAG功能\n    知识文本 文章制度FAQ\n    知识表格 Excel结构化数据\n    知识图片 OCR识别入库\n  记忆模块\n    变量 临时键值对\n    数据库 结构化长期存储\n    长期记忆 自动提取关键信息\n    文件盒子 多模态文件存储\n  多端发布\n    微信公众号企业微信飞书\n    Telegram Discord\n    API接口调用",
+      "category": "AI应用平台"
+    },
+    {
+      "title": "提示工程核心技巧",
+      "description": "从基础到高级的提示工程方法体系。",
+      "markmap": "提示工程 Prompt Engineering\n  提示词构成五要素\n    指令 Instruction 要做什么\n    上下文 Context 背景信息\n    例子 Examples 输入输出示例\n    输入 Input 任务输入\n    输出格式 Output 期望格式\n  消息角色\n    system 系统提示词 定义总规则\n    user 用户提示词 具体问题\n    assistant 助手消息 对话历史\n  基础技巧\n    零样本提示 Zero-Shot\n      直接给出任务指令\n      适合简单明确任务\n    少样本提示 Few-Shot\n      提供两到三个示例引导\n      适合需要特定格式任务\n  进阶技巧\n    思维链 CoT\n      引导分步骤推理\n      适合复杂逻辑数学\n    自我一致性 Self-Consistency\n      生成多个候选答案\n      投票选择最优解\n    思维树 ToT\n      多分支探索路径\n      评估剪枝选最佳\n      适合创造性复杂任务\n  设计原则\n    CLEAR原则\n      Context 上下文\n      Length 长度\n      Examples 示例\n      Audience 受众\n      Role 角色\n  安全防范\n    提示注入攻击防御\n    越狱攻击防御\n    输入净化与多层审核",
+      "category": "提示工程"
+    },
+    {
+      "title": "向量数据库技术选型",
+      "description": "主要向量数据库和索引算法的分类与选型指南。",
+      "markmap": "向量数据库技术体系\n  FAISS Meta开源\n    精确索引 IndexFlat\n      精确搜索无精度损失\n      适合小于10万向量\n    倒排索引 IndexIVFFlat\n      K-means聚类分区\n      搜索最近的nprobe个中心\n      适合百万到亿级向量\n    图索引 IndexHNSW\n      分层可导航小世界图\n      时间复杂度O(log N)\n      当前最快查询方案\n    乘积量化 IndexIVFPQ\n      压缩存储大幅降低内存\n      适合超大规模亿级以上\n  Chroma 轻量级\n    AI原生设计\n    四个核心API\n    内置嵌入模型\n    元数据过滤\n    与LangChain无缝集成\n  其他主流选择\n    Milvus 分布式千亿级\n    Pinecone 全托管服务\n    Qdrant Rust构建高级过滤\n    Weaviate 混合搜索\n    Elasticsearch 全文加向量\n  相似度计算方法\n    余弦相似度 Cosine\n    欧氏距离 L2\n    内积 IP",
+      "category": "大模型基础"
+    },
+    {
+      "title": "大模型应用开发框架对比",
+      "description": "三大主流大模型应用开发框架和AI应用平台的对比。",
+      "markmap": "大模型应用开发\n  LangChain\n    定位: LLM应用开发框架\n    核心模块\n      模型IO封装\n      检索Retrieval RAG\n      Chains链式调用\n      Agents智能体\n      Memory记忆管理\n      LCEL声明式编排\n    进阶: LangGraph图工作流\n      ReAct Agent快速搭建\n      Plan and Execute模式\n      Human-in-the-loop\n      Checkpoint持久化\n  LlamaIndex\n    定位: 数据框架连接数据与LLM\n    核心组件\n      Data Connectors 数据加载\n      Index 索引构建\n      Retriever 检索器\n      Query Engine 查询引擎\n      Agents 智能体\n      Workflows 工作流\n    特点\n      RAG生态最完善\n      文档加载丰富格式\n      多向量库集成\n  AI应用开发平台\n    Coze 扣子 字节跳动\n      零代码可视化\n      插件生态丰富\n      多端一键发布\n    Dify 开源LLMOps\n      模型中立多模型接入\n      私有化部署\n      API友好易集成\n    FastGPT 知识库专家\n      RAG性能极致\n      复杂文档处理强",
+      "category": "大模型基础"
+    },
+    {
+      "title": "传统机器学习算法分类",
+      "description": "按学习方式、模型类型、学派思想多维度分类的传统ML算法体系",
+      "markmap": "传统机器学习算法体系\n  监督学习（有标签）\n    回归算法（预测连续值）\n      线性回归\n      支持向量回归SVR\n    分类算法（预测离散类别）\n      逻辑回归\n      决策树\n      随机森林\n      XGBoost\n      支持向量机SVM\n      KNN近邻算法\n      朴素贝叶斯\n  无监督学习（无标签）\n    聚类算法\n      K-Means聚类\n      层次聚类\n      DBSCAN密度聚类\n    降维算法\n      PCA主成分分析（线性）\n      t-SNE（非线性/仅可视化）\n    关联规则学习\n      Apriori算法\n      FP-Growth算法\n  三大学派分类\n    频率判别学派：LR/SVM/树模型/XGBoost\n    贝叶斯概率学派：朴素贝叶斯\n    实例惰性学派：KNN\n  模型结构分类\n    参数模型：线性回归/逻辑回归/SVM\n    非参数模型：决策树/随机森林/XGBoost\n    惰性学习模型：KNN\n    生成式模型：朴素贝叶斯",
+      "category": "传统机器学习"
+    },
+    {
+      "title": "深度学习网络分类",
+      "description": "按适用数据类型和网络结构分类的深度学习模型体系",
+      "markmap": "深度学习网络体系\n  基础网络结构\n    M-P神经元模型（1943）\n    单层感知机（1958）\n    MLP多层感知机（BP反向传播）\n  图像处理（CV方向）\n    CNN卷积神经网络\n      LeNet-5（开山之作）\n      AlexNet/VGG/ResNet\n    核心组件\n      卷积层Conv\n      激活层ReLU\n      池化层MaxPool\n      全连接层FC\n  序列处理（NLP方向）\n    循环序列模型\n      RNN（有记忆但梯度消失）\n      LSTM（三门控+细胞态）\n      GRU（两门控/轻量化）\n    编码器-解码器架构\n      Seq2Seq（RNN/LSTM/GRU骨架）\n      Attention+Seq2Seq\n    Transformer架构\n      自注意力Self-Attention\n      多头注意力Multi-Head\n      位置编码Positional Encoding\n      BERT（编码器-only/理解类）\n      GPT/LLaMA（解码器-only/生成类）\n      T5/BART（完整编解码器）",
+      "category": "深度学习"
+    },
+    {
+      "title": "微调技术分类体系",
+      "description": "大模型微调方法、训练阶段、压缩技术的完整分类",
+      "markmap": "大模型微调技术体系\n  训练三大阶段\n    预训练Pre-training（学习世界知识）\n    指令微调SFT（学会听从指令）\n    偏好对齐Alignment（符合人类价值观）\n      RLHF（人类反馈强化学习）\n      RLAIF（AI反馈强化学习）\n      DPO（直接偏好优化）\n  微调方法（按参数更新）\n    全量微调Full FT\n      更新全部参数\n      显存占用极高\n      灾难性遗忘风险\n    参数高效微调PEFT\n      LoRA（低秩适应/主流）\n      QLoRA（4bit量化+LoRA）\n      DoRA（权重分解LoRA）\n      LoRA+（差异化学习率）\n      rsLoRA（秩稳定LoRA）\n  微调目标（按数据类型）\n    领域微调（懂行业黑话）\n    任务微调（做具体工作）\n  模型压缩技术\n    量化（降精度/不改结构）\n      PTQ训练后量化\n      QAT量化感知训练\n      GPTQ/GGUF/AWQ\n    蒸馏（减参数/知识迁移）\n      在线蒸馏（白盒联合训练）\n      离线蒸馏（黑盒指令蒸馏）\n    剪枝（删冗余权重）\n  训练工具\n    LLaMA-Factory（低代码/无代码）\n    Unsloth（极速微调/省显存）\n    PEFT+TRL（HuggingFace官方）",
+      "category": "微调"
+    },
+    {
+      "title": "NLP文本处理流程",
+      "description": "从原始语料到上层应用的完整NLP处理流水线",
+      "markmap": "NLP文本处理完整流程\n  输入层\n    语音识别ASR（语音→文本）\n    OCR光学字符识别（图像→文本）\n  文本预处理\n    文本清洗\n      去除网页链接/@用户/话题标签\n      全角转半角\n      繁体转简体\n      过滤emoji/特殊符号\n    分词Tokenization\n      英文分词（NLTK）\n      中文分词（jieba）\n        精确模式/全模式/搜索模式\n      词性标注POS Tagging\n      命名实体识别NER\n    停用词过滤\n    词干提取/词形还原（英文）\n  词向量构建\n    One-Hot独热编码\n    Word2Vec（CBOW/Skip-Gram）\n    GloVe（全局词共现矩阵）\n    fastText（子词机制）\n    神经网络Embedding层\n  特征表示层\n    句法分析（依存/成分）\n    语义分析（消歧/语义网络）\n    篇章分析（指代消解/主题建模）\n  应用层任务\n    文本分类/情感分析\n    机器翻译\n    问答系统\n    文本摘要\n    对话生成",
+      "category": "深度学习"
+    },
+    {
+      "title": "Transformer架构衍生谱系",
+      "description": "基于Transformer三条技术路线的预训练模型家族",
+      "markmap": "Transformer模型谱系\n  编码器-Only（蓝色/BERT家族）\n    特点：双向上下文/文本理解\n    代表模型\n      BERT\n      RoBERTa\n      ALBERT\n      ELECTRA\n      DeBERTa\n      XLM-R（多语言）\n    下游任务\n      文本分类/情感分析\n      命名实体识别NER\n      句子对匹配\n      抽取式问答\n      向量检索Embedding\n  解码器-Only（红色/GPT家族）\n    特点：单向因果掩码/文本生成\n    代表模型\n      GPT-2/GPT-3/GPT-4\n      LLaMA系列\n      Qwen系列\n      DeepSeek系列\n      Mistral\n    下游任务\n      文本续写/自由生成\n      多轮对话\n      代码生成\n      复杂推理\n  完整编解码器（灰色/T5家族）\n    特点：双注意力机制/序列转换\n    代表模型\n      T5\n      BART\n      M2M-100\n      BigBird\n    下游任务\n      机器翻译\n      文本摘要\n      文本改写",
+      "category": "深度学习"
+    },
+    {
+      "title": "模型评估指标体系",
+      "description": "分类、回归、聚类、大模型等各场景的评估指标汇总",
+      "markmap": "模型评估指标体系\n  分类模型评估\n    准确率Accuracy\n    精确率Precision\n    召回率Recall\n    F1-Score（精确率和召回率的调和平均）\n    ROC曲线与AUC\n    混淆矩阵\n  回归模型评估\n    MSE均方误差（训练用损失函数）\n    MAE平均绝对误差\n    RMSE均方根误差\n    R²决定系数（评估拟合效果）\n  聚类模型评估\n    肘部法则SSE拐点法\n    轮廓系数Silhouette Score\n  大模型通用评估\n    训练Loss曲线\n    验证Loss曲线（防过拟合）\n    早停策略Early Stopping\n    C-Eval/CMMLU（中文评测）\n    MMLU（国际通用评测）\n    压力测试\n      吞吐量tok/s\n      首Token延迟TTFT\n      并发效率\n  无监督学习评估\n    簇内紧凑度\n    簇间分离度\n    累积方差贡献率（PCA）\n    可视化效果（t-SNE）",
+      "category": "传统机器学习"
+    },
+    {
+      "title": "模型压缩与部署技术栈",
+      "description": "大模型从训练完成到线上部署的全套技术工具和方案",
+      "markmap": "模型压缩与部署技术栈\n  模型压缩\n    量化工具\n      bitsandbytes（BNB/微调实时量化）\n      GPTQ（线上部署标准）\n      GGUF（端侧离线标准/Ollama）\n      AWQ（激活感知/精度最高）\n    量化精度\n      FP32（100%体积/基准）\n      FP16/BF16（50%体积/训练推理）\n      INT8（25%体积/通用部署首选）\n      INT4（12.5%体积/本地低配）\n    蒸馏方案\n      直接使用开源蒸馏模型\n      自研离线蒸馏（教师造数据+学生SFT）\n  模型部署\n    本地部署\n      Ollama（一键部署）\n      llama.cpp（CPU推理）\n    服务化部署\n      vLLM（高性能推理引擎）\n      FastAPI（自建推理API）\n    容器化部署\n      Docker（环境打包/一键交付）\n      Docker Compose（多容器编排）\n  训练框架\n    LLaMA-Factory（低代码微调WebUI）\n    Unsloth（极速微调/2-5x加速）\n    PEFT+TRL（HuggingFace官方）\n  评估工具\n    EvalScope（ModelScope/国产模型评测）\n    lm_eval（EleutherAI/国际学术评测）\n  硬件平台\n    云端GPU（A100/H100/RTX4090）\n    AutoDL（按需租用GPU）\n    消费级显卡（RTX3060/3090/4090）\n    端侧设备（手机/边缘/IoT）",
+      "category": "微调"
+    },
+    {
+      "title": "LangChain六大组件体系",
+      "description": "LangChain核心模块的功能分类和子组件",
+      "category": "Agent",
+      "markmap": "LangChain组件体系\n  Model I/O 模型交互\n    LLM/ChatModel 大语言模型封装\n    Prompt Template 提示模板\n    Output Parser 输出解析器\n  Retrieval 检索模块\n    Document Loader 文档加载器\n    Text Splitter 文本分割器\n    Embedding 向量嵌入模型\n    Vector Store 向量数据库\n    Retriever 检索器\n  Chains 链式调用\n    LLMChain 基础链\n    SequentialChain 顺序链\n    RouterChain 路由链\n    LCEL 声明式链语法\n  Memory 记忆系统\n    ConversationBuffer 缓冲记忆\n    ConversationSummary 摘要记忆\n    VectorStoreMemory 向量记忆\n  Agents 智能体\n    Tool Calling Agent 工具调用型\n    ReAct Agent 推理行动型\n    Plan-Execute Agent 规划执行型\n  Callbacks 回调系统\n    Logging 日志记录\n    Streaming 流式输出\n    Tracing 链路追踪"
+    },
+    {
+      "title": "大模型工程化部署方案选型",
+      "description": "不同场景下的模型部署方案对比",
+      "category": "部署与工程化",
+      "markmap": "大模型部署方案\n  本地开发\n    Ollama 个人学习首选\n      ollama run qwen3:4b\n      REST API 集成\n      支持量化模型\n    LM Studio 可视化界面\n      Windows/Mac桌面应用\n      模型搜索下载\n      API服务一键启动\n  生产推理\n    vLLM 高并发推理\n      PagedAttention优化\n      连续批处理\n      适合API服务场景\n    Text Generation Inference TGI\n      HuggingFace官方方案\n      内置水塘采样\n      支持张量并行\n  容器化部署\n    Docker 环境一致性\n      编写Dockerfile\n      镜像构建分层缓存\n      docker compose编排\n    K8s 弹性扩容\n      HPA水平自动扩缩\n      GPU资源调度\n      滚动更新零停机\n  云服务\n    阿里百炼 API即用\n    火山方舟 豆包生态\n    AWS Bedrock 企业合规\n  混合方案\n    敏感数据本地+通用云端\n    离线推理+在线微调\n    CPU推理 llama.cpp"
+    }
+  ]
+}
