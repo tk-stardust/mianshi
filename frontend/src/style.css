@@ -408,6 +408,38 @@ pre.answer {
   font-family: inherit;
 }
 
+.custom-cat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.custom-cat .cat-prefix {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a90d9;
+  white-space: nowrap;
+}
+
+.custom-cat input {
+  flex: 1;
+  min-width: 160px;
+  margin-bottom: 0 !important;
+}
+
+.cat-preview {
+  width: 100%;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.cat-preview b {
+  color: #64748b;
+}
+
 .form-actions {
   display: flex;
   gap: 8px;
