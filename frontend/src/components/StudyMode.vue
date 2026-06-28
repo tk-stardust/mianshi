@@ -2,9 +2,13 @@
   <div class="study-mode">
     <!-- 筛选 -->
     <div class="toolbar">
-      <select v-model="filterCategory" @change="onFilterChange">
+      <select v-model="filterDomain" @change="onDomainChange">
+        <option value="">全部领域</option>
+        <option v-for="d in filters.domains" :key="d" :value="d">{{ d }}</option>
+      </select>
+      <select v-model="filterCategory" @change="onFilterChange" class="cat-select">
         <option value="">全部分类</option>
-        <option v-for="c in filters.categories" :key="c" :value="c">{{ c }}</option>
+        <option v-for="c in subCategories" :key="c" :value="c">{{ c }}</option>
       </select>
       <select v-model="filterLevel" @change="onFilterChange">
         <option value="">全部难度</option>
@@ -43,6 +47,7 @@
     <div v-if="questions.length === 0" class="empty">点击"重新抽题"开始背诵</div>
     <div v-else class="study-card">
       <div class="card-meta">
+        <span class="tag domain-tag" v-if="currentQ.domain">{{ currentQ.domain }}</span>
         <span class="tag category" :title="currentQ.category">{{ currentQ.category }}</span>
         <span class="tag" :class="'level-' + currentQ.level">{{ currentQ.level }}</span>
       </div>
@@ -73,6 +78,7 @@ import { ref, computed, onMounted } from "vue";
 import { fetchStudy, fetchFilters, updateQuestion } from "../api.js";
 
 const filters = ref({ categories: [], levels: [], statuses: ["未掌握", "需复习", "已掌握"] });
+const filterDomain = ref("");
 const filterCategory = ref("");
 const filterLevel = ref("");
 const filterStatus = ref("");
@@ -101,6 +107,23 @@ if (lastDate !== today) {
 
 const goalPercent = computed(() => Math.min(100, Math.round((dailyCount.value / dailyTarget.value) * 100)));
 
+const subCategories = computed(() => {
+  if (!filterDomain.value) return [];
+  return filters.value.categories?.[filterDomain.value] || [];
+});
+
+function shortCat(cat) {
+  const parts = cat.split('：');
+  if (parts.length >= 2) return parts[0].replace(/^.+?-/, '') + '：' + parts[1].slice(0, 10) + '...';
+  const noPrefix = cat.replace(/^.+?-/, '');
+  return noPrefix.length > 18 ? noPrefix.slice(0, 16) + '...' : noPrefix;
+}
+
+function onDomainChange() {
+  filterCategory.value = "";
+  startStudy();
+}
+
 function toggleWeak() {
   weakMode.value = !weakMode.value;
   if (weakMode.value) {
@@ -127,6 +150,7 @@ function setDailyTarget() {
 
 async function startStudy() {
   const params = {
+    domain: filterDomain.value,
     category: filterCategory.value,
     level: filterLevel.value,
     status: filterStatus.value,

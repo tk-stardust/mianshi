@@ -5,10 +5,25 @@
       <label>题目</label>
       <input v-model="form.title" placeholder="请输入面试题目" :class="{ 'input-error': errors.title }" @input="errors.title = ''" />
       <span class="err-msg" v-if="errors.title">{{ errors.title }}</span>
+      <label>领域</label>
+      <select v-model="form.domain" @change="onDomainChange" :class="{ 'input-error': errors.domain }">
+        <option value="">--- 选择领域 ---</option>
+        <option v-for="d in domains" :key="d" :value="d">{{ d }}</option>
+        <option value="__custom__">+ 自定义领域...</option>
+      </select>
+      <input
+        v-if="form.domain === '__custom__'"
+        v-model="customDomain"
+        placeholder="输入新领域名称"
+        style="margin-top: 4px;"
+        @input="onCustomDomainChange"
+      />
+      <span class="err-msg" v-if="errors.domain">{{ errors.domain }}</span>
+
       <label>分类</label>
       <select v-model="selectedCategory" @change="onCategoryChange; errors.category = ''" :class="{ 'input-error': errors.category }">
         <option value="">--- 选择已有分类 ---</option>
-        <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
+        <option v-for="c in subCats" :key="c" :value="c">{{ c }}</option>
         <option value="__custom__">+ 自定义分类...</option>
       </select>
       <input
@@ -38,23 +53,26 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from "vue";
+import { reactive, ref, computed, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import { createQuestion, updateQuestion, fetchFilters } from "../api.js";
 
 const props = defineProps({ question: Object });
 const emit = defineEmits(["close", "saved"]);
 
-const categories = ref([]);
+const categories = ref([]);  // 旧的 categories 数组，现在改为结构化
+const domains = ref([]);
 const isEdit = !!props.question;
 const form = reactive({
   title: props.question?.title || "",
   answer: props.question?.answer || "",
+  domain: props.question?.domain || "",
   category: props.question?.category || "",
   level: props.question?.level || "重点",
 });
 const selectedCategory = ref("");
-const errors = reactive({ title: "", answer: "", category: "" });
+const customDomain = ref("");
+const errors = reactive({ title: "", answer: "", category: "", domain: "" });
 
 function validate() {
   errors.title = "";
@@ -76,6 +94,24 @@ function validate() {
   return ok;
 }
 
+const subCats = computed(() => {
+  const d = form.domain;
+  if (!d || d === '__custom__') return [];
+  return categories.value?.[d] || [];
+});
+
+function onDomainChange() {
+  if (form.domain !== '__custom__') {
+    customDomain.value = '';
+    selectedCategory.value = '';
+    form.category = '';
+  }
+}
+
+function onCustomDomainChange() {
+  form.domain = customDomain.value;
+}
+
 function onCategoryChange() {
   if (selectedCategory.value === "__custom__") {
     form.category = "";
@@ -86,9 +122,18 @@ function onCategoryChange() {
 
 onMounted(async () => {
   const data = await fetchFilters();
-  categories.value = data.categories;
-  if (form.category && data.categories.includes(form.category)) {
-    selectedCategory.value = form.category;
+  domains.value = data.domains || [];
+  categories.value = data.categories || {};
+  if (form.category && data.categories) {
+    // 在结构化 categories 中查找
+    for (const [dom, cats] of Object.entries(data.categories)) {
+      if (cats.includes(form.category)) {
+        if (!form.domain) form.domain = dom;
+        selectedCategory.value = form.category;
+        return;
+      }
+    }
+    selectedCategory.value = "__custom__";
   } else if (form.category) {
     selectedCategory.value = "__custom__";
   }

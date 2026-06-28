@@ -33,7 +33,10 @@ def get_db():
 
 @app.post("/api/questions", response_model=QuestionOut)
 def create_question(q: QuestionCreate, db: Session = Depends(get_db)):
-    question = Question(**q.model_dump())
+    data = q.model_dump()
+    if not data.get("domain") and data.get("category"):
+        data["domain"] = data["category"].split("-")[0] if "-" in data["category"] else ""
+    question = Question(**data)
     db.add(question)
     db.commit()
     db.refresh(question)
@@ -65,6 +68,7 @@ def delete_question(qid: int, db: Session = Depends(get_db)):
 @app.get("/api/questions", response_model=QuestionListOut)
 def list_questions(
     keyword: str = Query(default=""),
+    domain: str = Query(default=""),
     category: str = Query(default=""),
     level: str = Query(default=""),
     status: str = Query(default=""),
@@ -76,6 +80,8 @@ def list_questions(
     q = db.query(Question)
     if keyword:
         q = q.filter(Question.title.contains(keyword) | Question.answer.contains(keyword))
+    if domain:
+        q = q.filter(Question.domain == domain)
     if category:
         q = q.filter(Question.category == category)
     if level:
@@ -100,6 +106,7 @@ def get_question(qid: int, db: Session = Depends(get_db)):
 
 @app.get("/api/study")
 def study_questions(
+    domain: str = Query(default=""),
     category: str = Query(default=""),
     level: str = Query(default=""),
     status: str = Query(default=""),
@@ -109,6 +116,8 @@ def study_questions(
 ):
     """随机抽取题目用于背诵，status 支持逗号分隔多值"""
     q = db.query(Question)
+    if domain:
+        q = q.filter(Question.domain == domain)
     if category:
         q = q.filter(Question.category == category)
     if level:
@@ -132,10 +141,14 @@ def study_questions(
 
 @app.get("/api/filters")
 def get_filters(db: Session = Depends(get_db)):
-    categories = [row[0] for row in db.query(Question.category).distinct().all()]
+    domains = [row[0] for row in db.query(Question.domain).distinct().order_by(Question.domain).all() if row[0]]
+    cats_by_domain = {}
+    for d in domains:
+        cats = [row[0] for row in db.query(Question.category).filter(Question.domain == d).distinct().order_by(Question.category).all()]
+        cats_by_domain[d] = cats
     levels = [row[0] for row in db.query(Question.level).distinct().all()]
     statuses = ["未掌握", "需复习", "已掌握"]
-    return {"categories": categories, "levels": levels, "statuses": statuses}
+    return {"domains": domains, "categories": cats_by_domain, "levels": levels, "statuses": statuses}
 
 
 @app.get("/api/stats", response_model=StatsOut)
@@ -166,6 +179,7 @@ def get_stats(db: Session = Depends(get_db)):
 
 @app.get("/api/export")
 def export_questions(
+    domain: str = Query(default=""),
     category: str = Query(default=""),
     level: str = Query(default=""),
     status: str = Query(default=""),
@@ -174,6 +188,8 @@ def export_questions(
 ):
     """导出题目为 JSON"""
     q = db.query(Question)
+    if domain:
+        q = q.filter(Question.domain == domain)
     if category:
         q = q.filter(Question.category == category)
     if level:
@@ -190,6 +206,7 @@ def export_questions(
 
 @app.get("/api/export/md")
 def export_questions_md(
+    domain: str = Query(default=""),
     category: str = Query(default=""),
     level: str = Query(default=""),
     status: str = Query(default=""),
@@ -199,6 +216,8 @@ def export_questions_md(
     """导出题目为 Markdown"""
     from fastapi.responses import PlainTextResponse
     q = db.query(Question)
+    if domain:
+        q = q.filter(Question.domain == domain)
     if category:
         q = q.filter(Question.category == category)
     if level:
@@ -237,11 +256,16 @@ def import_questions(data: dict, db: Session = Depends(get_db)):
         if exist:
             skipped += 1
             continue
+        cat = item.get("category", "未分类")
+        dom = item.get("domain", "")
+        if not dom and cat and "-" in cat:
+            dom = cat.split("-")[0]
         q = Question(
             title=item.get("title", ""),
             answer=item.get("answer", ""),
-            category=item.get("category", "未分类"),
-            level=item.get("level", "中级"),
+            domain=dom,
+            category=cat,
+            level=item.get("level", "重点"),
             status=item.get("status", "未掌握"),
             favorite=item.get("favorite", False),
         )

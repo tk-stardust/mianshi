@@ -5,13 +5,15 @@ from pydantic import BaseModel, Field
 class QuestionCreate(BaseModel):
     title: str
     answer: str
+    domain: str = ""
     category: str = "未分类"
-    level: str = "中级"
+    level: str = "重点"
 
 
 class QuestionUpdate(BaseModel):
     title: str | None = None
     answer: str | None = None
+    domain: str | None = None
     category: str | None = None
     level: str | None = None
     status: str | None = None
@@ -22,6 +24,7 @@ class QuestionOut(BaseModel):
     id: int
     title: str
     answer: str
+    domain: str = ""
     category: str
     level: str
     status: str

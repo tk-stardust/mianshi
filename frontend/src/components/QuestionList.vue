@@ -3,9 +3,13 @@
     <!-- 搜索 & 筛选 -->
     <div class="toolbar">
       <input v-model="keyword" placeholder="搜索题目/答案..." @input="search" />
-      <select v-model="filterCategory" @change="search">
+      <select v-model="filterDomain" @change="onDomainChange">
+        <option value="">全部领域</option>
+        <option v-for="d in filters.domains" :key="d" :value="d">{{ d }}</option>
+      </select>
+      <select v-model="filterCategory" @change="search" class="cat-select">
         <option value="">全部分类</option>
-        <option v-for="c in filters.categories" :key="c" :value="c">{{ c }}</option>
+        <option v-for="c in subCategories" :key="c" :value="c">{{ c }}</option>
       </select>
       <select v-model="filterLevel" @change="search">
         <option value="">全部难度</option>
@@ -30,6 +34,7 @@
         <span class="card-title">{{ q.title }}</span>
         <span class="card-meta">
           <span class="fav-star" :class="{ active: q.favorite }" @click.stop="toggleFav(q)" :title="q.favorite ? '取消收藏' : '收藏'">{{ q.favorite ? '⭐' : '☆' }}</span>
+          <span class="tag domain-tag" v-if="q.domain">{{ q.domain }}</span>
           <span class="tag category" :title="q.category">{{ q.category }}</span>
           <span class="tag" :class="'level-' + q.level">{{ q.level }}</span>
           <span class="tag" :class="'status-' + q.status">{{ q.status }}</span>
@@ -85,6 +90,7 @@ const emit = defineEmits(["add", "edit"]);
 const questions = ref([]);
 const filters = ref({ categories: [], levels: [], statuses: ["未掌握", "需复习", "已掌握"] });
 const keyword = ref("");
+const filterDomain = ref("");
 const filterCategory = ref("");
 const filterLevel = ref("");
 const filterStatus = ref("");
@@ -113,6 +119,24 @@ const pageNumbers = computed(() => {
   return pages;
 });
 
+const subCategories = computed(() => {
+  if (!filterDomain.value) return [];
+  return filters.value.categories?.[filterDomain.value] || [];
+});
+
+function shortCat(cat) {
+  // 截断显示: "Agent-C1 最高频基础：Agent 定义、差异与架构设计" → "C1 最高频基础..."
+  const parts = cat.split('：');
+  if (parts.length >= 2) return parts[0].replace(/^.+?-/, '') + '：' + parts[1].slice(0, 10) + '...';
+  const noPrefix = cat.replace(/^.+?-/, '');
+  return noPrefix.length > 18 ? noPrefix.slice(0, 16) + '...' : noPrefix;
+}
+
+function onDomainChange() {
+  filterCategory.value = "";
+  search();
+}
+
 function goPage(p) {
   if (typeof p === 'string') return;
   if (p < 1 || p > totalPages.value) return;
@@ -133,6 +157,7 @@ async function loadQuestions() {
   loading.value = true;
   const params = {
     keyword: keyword.value,
+    domain: filterDomain.value,
     category: filterCategory.value,
     level: filterLevel.value,
     status: filterStatus.value,
@@ -181,6 +206,7 @@ async function toggleFav(q) {
 async function handleExport() {
   const params = {};
   if (keyword.value) params.keyword = keyword.value;
+  if (filterDomain.value) params.domain = filterDomain.value;
   if (filterCategory.value) params.category = filterCategory.value;
   if (filterLevel.value) params.level = filterLevel.value;
   if (filterStatus.value) params.status = filterStatus.value;

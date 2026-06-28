@@ -11,5 +11,6 @@ venv/
 .idea/
 backend/data/课件/
 backend/data/面试题*
+backend/data/*.db
 .venv/
 /package-lock.json
