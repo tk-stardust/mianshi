@@ -1342,3 +1342,75 @@ pre.answer {
   cursor: pointer;
   height: 36px;
 }
+
+/* ========== 移动端适配 ========== */
+@media (max-width: 768px) {
+  .app { max-width: 100%; padding: 10px; }
+
+  header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  header h1 { font-size: 18px; }
+
+  nav { flex-wrap: wrap; }
+  nav button { padding: 6px 12px; font-size: 13px; border-radius: 6px; }
+
+  .toolbar { gap: 6px; }
+  .toolbar > input { width: 100%; }
+  .toolbar > select { width: 48%; flex: none; }
+  .toolbar > select.cat-select { width: 48%; }
+
+  .card-header { flex-direction: column; align-items: flex-start; }
+  .card-title { font-size: 14px; }
+  .card-meta { font-size: 11px; }
+  .card-actions { gap: 4px; }
+  .card-actions .btn-sm { padding: 4px 8px; font-size: 11px; }
+
+  .question-card { padding: 10px; }
+
+  .study-mode .study-card { max-width: 100%; padding: 16px; }
+  .study-card h3 { font-size: 16px; }
+  .study-actions { flex-wrap: wrap; gap: 6px; }
+  .study-actions button { padding: 8px 16px; font-size: 13px; }
+  .study-actions .btn-master,
+  .study-actions .btn-review,
+  .study-actions .btn-unmaster { padding: 8px 16px; font-size: 13px; }
+
+  .stat-cards { gap: 8px; }
+  .stat-card { min-width: 70px; padding: 10px; }
+  .stat-card span { font-size: 22px; }
+  .stat-card strong { font-size: 12px; }
+
+  .form-card { width: 95vw; padding: 16px; }
+
+  .concept-grid { grid-template-columns: 1fr; }
+  .concept-card { padding: 12px; }
+
+  .pagination-bar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; }
+  .pagination-left { font-size: 12px; }
+  .page-btn { width: 30px; height: 30px; font-size: 12px; }
+
+  .kn-sidebar { width: 200px; }
+  .kn-sidebar.collapsed { width: 24px; }
+  .nav-phase { font-size: 12px; }
+  .nav-module { font-size: 11px; padding: 3px 8px 3px 18px; }
+  .nav-doc { font-size: 11px; padding: 2px 8px 2px 22px; }
+
+  .modal-box { width: 96vw; height: 80vh; padding: 16px; }
+
+  .doc-card { padding: 10px 12px; }
+
+  .item-card { padding: 10px 12px; }
+  .item-title { font-size: 13px; }
+  .item-desc { display: none; }
+
+  .knowledge-view .toolbar { flex-wrap: wrap; gap: 4px; }
+  .knowledge-view .toolbar button { font-size: 11px; padding: 5px 8px; }
+  .knowledge-view .toolbar select { font-size: 11px; padding: 4px 6px; width: auto; }
+}
+
+/* 小屏手机 */
+@media (max-width: 420px) {
+  .toolbar > select { width: 47%; }
+  .toolbar > select.cat-select { width: 47%; }
+  .card-actions .btn-sm { font-size: 10px; padding: 3px 6px; }
+}
+
