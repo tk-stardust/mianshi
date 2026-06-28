@@ -43,7 +43,7 @@
     <div v-if="questions.length === 0" class="empty">点击"重新抽题"开始背诵</div>
     <div v-else class="study-card">
       <div class="card-meta">
-        <span class="tag category">{{ currentQ.category }}</span>
+        <span class="tag category" :title="currentQ.category">{{ currentQ.category }}</span>
         <span class="tag" :class="'level-' + currentQ.level">{{ currentQ.level }}</span>
       </div>
       <h3>{{ currentQ.title }}</h3>

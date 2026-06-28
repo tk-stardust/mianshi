@@ -87,6 +87,7 @@ nav button.active {
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
+  max-width: 220px;
 }
 
 .btn-primary {
@@ -177,10 +178,13 @@ nav button.active {
   background: #e8e8e8;
 }
 
-.tag.category { background: #e3f2fd; color: #1565c0; }
+.tag.category { background: #e3f2fd; color: #1565c0; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tag.level-初级 { background: #e8f5e9; color: #2e7d32; }
 .tag.level-中级 { background: #fff3e0; color: #ef6c00; }
 .tag.level-高级 { background: #fce4ec; color: #c62828; }
+.tag.level-必会 { background: #fce4ec; color: #c62828; }
+.tag.level-重点 { background: #fff3e0; color: #ef6c00; }
+.tag.level-了解 { background: #e8f5e9; color: #2e7d32; }
 .tag.status-已掌握 { background: #c8e6c9; color: #2e7d32; }
 .tag.status-需复习 { background: #fff9c4; color: #f9a825; }
 .tag.status-未掌握 { background: #ffcdd2; color: #c62828; }

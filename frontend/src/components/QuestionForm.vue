@@ -22,9 +22,9 @@
       <span class="err-msg" v-if="errors.category">{{ errors.category }}</span>
       <label>难度</label>
       <select v-model="form.level">
-        <option value="初级">初级</option>
-        <option value="中级">中级</option>
-        <option value="高级">高级</option>
+        <option value="必会">必会</option>
+        <option value="重点">重点</option>
+        <option value="了解">了解</option>
       </select>
       <label>答案</label>
       <textarea v-model="form.answer" rows="8" placeholder="请输入参考答案..." :class="{ 'input-error': errors.answer }" @input="errors.answer = ''"></textarea>
@@ -51,7 +51,7 @@ const form = reactive({
   title: props.question?.title || "",
   answer: props.question?.answer || "",
   category: props.question?.category || "",
-  level: props.question?.level || "中级",
+  level: props.question?.level || "重点",
 });
 const selectedCategory = ref("");
 const errors = reactive({ title: "", answer: "", category: "" });

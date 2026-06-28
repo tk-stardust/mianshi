@@ -30,7 +30,7 @@
         <span class="card-title">{{ q.title }}</span>
         <span class="card-meta">
           <span class="fav-star" :class="{ active: q.favorite }" @click.stop="toggleFav(q)" :title="q.favorite ? '取消收藏' : '收藏'">{{ q.favorite ? '⭐' : '☆' }}</span>
-          <span class="tag category">{{ q.category }}</span>
+          <span class="tag category" :title="q.category">{{ q.category }}</span>
           <span class="tag" :class="'level-' + q.level">{{ q.level }}</span>
           <span class="tag" :class="'status-' + q.status">{{ q.status }}</span>
         </span>
