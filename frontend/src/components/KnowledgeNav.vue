@@ -1,7 +1,12 @@
 <template>
-  <aside class="kn-sidebar">
-    <div class="sidebar-title">课件导航</div>
-    <div class="sidebar-tree">
+  <aside class="kn-sidebar" :class="{ collapsed: !sidebarOpen }">
+    <div class="sidebar-title">
+      <span v-show="sidebarOpen">课件导航</span>
+      <button class="sidebar-toggle" @click="sidebarOpen = !sidebarOpen" :title="sidebarOpen ? '收起导航' : '展开导航'">
+        {{ sidebarOpen ? '◁' : '▶' }}
+      </button>
+    </div>
+    <div class="sidebar-tree" v-show="sidebarOpen">
       <template v-for="(phase, pi) in navTree" :key="pi">
         <div class="nav-phase" @click="toggleExpand('p', pi)">
           <span class="nav-arrow">{{ expandedState['p'+pi] ? '▾' : '▸' }}</span>
@@ -42,6 +47,7 @@ const props = defineProps({ activeDoc: String });
 
 const data = ref({ concepts: [] });
 const activeDoc = ref("");
+const sidebarOpen = ref(true);
 const expandedState = reactive({});
 
 // 默认展开第一层

@@ -7,6 +7,11 @@
         <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
       </select>
       <button :class="{ active: mode === 'concepts' }" @click="mode = 'concepts'">概念卡片 ({{ filteredConcepts.length }})</button>
+      <select v-if="mode === 'concepts'" v-model="tierFilter" style="width:auto;margin-left:4px">
+        <option value="all">全部 ({{ conceptsTotal }})</option>
+        <option value="core">核心 ({{ coreCount }})</option>
+        <option value="extended">扩展 ({{ extendedCount }})</option>
+      </select>
       <button :class="{ active: mode === 'docs' }" @click="mode = 'docs'">按文档 ({{ docGroups.length }})</button>
       <button :class="{ active: mode === 'flowcharts' }" @click="mode = 'flowcharts'">流程图 ({{ filteredFlows.length }})</button>
       <button :class="{ active: mode === 'mindmaps' }" @click="mode = 'mindmaps'">思维导图 ({{ filteredMaps.length }})</button>
@@ -111,6 +116,7 @@ watch(mode, (v) => emit("update:mode", v));
 
 const data = ref({ concepts: [], flowcharts: [], mindmaps: [] });
 const filterCat = ref("");
+const tierFilter = ref("all");
 const expanded = ref(null);
 
 // Modal
@@ -136,9 +142,17 @@ const categories = computed(() => {
   return [...s].sort();
 });
 
-const filteredConcepts = computed(() =>
-  filterCat.value ? data.value.concepts.filter(c => c.category === filterCat.value) : data.value.concepts
-);
+const catFiltered = computed(() => filterCat.value ? data.value.concepts.filter(c => c.category === filterCat.value) : data.value.concepts);
+
+const conceptsTotal = computed(() => catFiltered.value.length);
+const coreCount = computed(() => catFiltered.value.filter(c => c.tier === 'core').length);
+const extendedCount = computed(() => catFiltered.value.filter(c => c.tier === 'extended').length);
+
+const filteredConcepts = computed(() => {
+  let arr = catFiltered.value;
+  if (tierFilter.value !== 'all') arr = arr.filter(c => c.tier === tierFilter.value);
+  return arr;
+});
 const filteredFlows = computed(() =>
   filterCat.value ? data.value.flowcharts.filter(f => f.category === filterCat.value) : data.value.flowcharts
 );
