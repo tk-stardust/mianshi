@@ -13,5 +13,6 @@ backend/data/课件/
 backend/data/面试题*
 backend/data/*.db
 backend/data/复习攻略.md
+backend/data/免费部署指南.md
 .venv/
 /package-lock.json
