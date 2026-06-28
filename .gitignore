@@ -12,5 +12,6 @@ venv/
 backend/data/课件/
 backend/data/面试题*
 backend/data/*.db
+backend/data/复习攻略.md
 .venv/
 /package-lock.json
