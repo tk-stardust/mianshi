@@ -92,7 +92,7 @@ def list_questions(
         q = q.filter(Question.favorite == favorite)
 
     total = q.count()
-    items = q.order_by(Question.updated_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    items = q.order_by(Question.domain, Question.category, Question.id).offset((page - 1) * page_size).limit(page_size).all()
     return QuestionListOut(total=total, items=items)
 
 
@@ -228,7 +228,7 @@ def export_questions_md(
     if favorite is not None:
         q = q.filter(Question.favorite == favorite)
 
-    items = q.order_by(Question.category, Question.id).all()
+    items = q.order_by(Question.domain, Question.category, Question.id).all()
     lines = []
     cur_cat = None
     for item in items:

@@ -180,9 +180,13 @@ function toggleExpand(id) {
   expanded.value = expanded.value === id ? null : id;
 }
 
+const statusLabels = { "已掌握": "✓ 已标记为掌握", "需复习": "↻ 已标记为需复习", "未掌握": "✗ 已标记为未掌握" };
+
 async function quickStatus(q, status) {
   await updateQuestion(q.id, { status });
   q.status = status;
+  ElMessage.success(statusLabels[status] || "状态已更新");
+  if (filterStatus.value) loadQuestions();
 }
 
 async function handleDelete(id) {
