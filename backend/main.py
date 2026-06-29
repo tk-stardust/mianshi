@@ -283,7 +283,13 @@ def get_knowledge():
     if not os.path.exists(path):
         return {"concepts": [], "flowcharts": [], "mindmaps": []}
     with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+    # 将嵌套 detail 字段展平到顶层，统一概念卡片数据结构
+    for c in data.get("concepts", []):
+        detail = c.pop("detail", None)
+        if detail:
+            c.update(detail)
+    return data
 
 
 # === 静态文件服务（前端打包后的 dist 目录）===
